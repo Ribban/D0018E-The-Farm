@@ -1,0 +1,54 @@
+CREATE SCHEMA IF NOT EXISTS "public";
+
+CREATE TABLE "public"."User" (
+    "User_id" int NOT NULL,
+    "first_name" varchar,
+    "last_name" varchar,
+    "phone" varchar,
+    "email" varchar,
+    "Admin" boolean,
+    PRIMARY KEY ("User_id")
+);
+
+CREATE TABLE "public"."order_items" (
+    "order_id" int NOT NULL,
+    "item_id" int NOT NULL UNIQUE,
+    "product_id" int,
+    "quantity" int,
+    "list_price" numeric(10, 2),
+    PRIMARY KEY ("order_id")
+);
+
+CREATE TABLE "public"."categories" (
+    "category_id" int NOT NULL,
+    "category_name" varchar,
+    PRIMARY KEY ("category_id")
+);
+
+CREATE TABLE "public"."products" (
+    "product_id" int NOT NULL,
+    "product_name" varchar,
+    "weight" numeric(10, 2),
+    "category_id" int,
+    "Packaging_date" smallint,
+    "list_price" numeric(10, 2),
+    "Animal_Age" smallint,
+    PRIMARY KEY ("product_id")
+);
+
+CREATE TABLE "public"."orders" (
+    "order_id" int NOT NULL,
+    "User_id" int,
+    "order_status" smallint,
+    "order_date" date,
+    "required_date" date,
+    "Pickup_date" date,
+    PRIMARY KEY ("order_id")
+);
+
+-- Foreign key constraints
+-- Schema: public
+ALTER TABLE "public"."order_items" ADD CONSTRAINT "fk_order_items_order_id_orders_order_id" FOREIGN KEY("order_id") REFERENCES "public"."orders"("order_id");
+ALTER TABLE "public"."order_items" ADD CONSTRAINT "fk_order_items_product_id_products_product_id" FOREIGN KEY("product_id") REFERENCES "public"."products"("product_id");
+ALTER TABLE "public"."orders" ADD CONSTRAINT "fk_orders_User_id_User_User_id" FOREIGN KEY("User_id") REFERENCES "public"."User"("User_id");
+ALTER TABLE "public"."products" ADD CONSTRAINT "fk_products_category_id_categories_category_id" FOREIGN KEY("category_id") REFERENCES "public"."categories"("category_id");
