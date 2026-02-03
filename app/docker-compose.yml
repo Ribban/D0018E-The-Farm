@@ -24,8 +24,11 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80" # Du når denna på http://localhost:5050
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - db
 
 volumes:
   db_data:
+  pgadmin_data:
