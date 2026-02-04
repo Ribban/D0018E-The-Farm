@@ -5,10 +5,10 @@ from data.queries import users_bp
 app = Flask(__name__)
 
 # Konfiguration till docker-compose.yml
-DB_USER = "farm_admin"
-DB_PASSWORD = "drängenelias"
-DB_HOST = "localhost" # Eftersom Python lokalt, Docker port-forwardar 5432
-DB_NAME = "farm_db"
+DB_USER = "elias"
+DB_PASSWORD = "6969"
+DB_HOST = "localhost"
+DB_NAME = "farmdb"
 DB_PORT = "5432"
 
 # Använd psycopg2-drivrutinen för postgres
@@ -31,4 +31,4 @@ if __name__ == "__main__":
         db.create_all()
         print("Tabeller kontrollerade/skapade!")
         
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
