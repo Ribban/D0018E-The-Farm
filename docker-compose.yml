@@ -16,7 +16,23 @@ services:
    #   - "5432:5432" # Gör databasen tillgänglig på din dator (localhost)
    # volumes:
     #  - db_data:/var/lib/postgresql/data # Sparar datan även om du startar om containern
-  
+  db:
+    image: postgres:15-alpine
+    container_name: farm_postgres
+    environment:
+      POSTGRES_USER: elias
+      POSTGRES_PASSWORD: "6969"
+      POSTGRES_DB: farmdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: farm_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
   pgadmin:
     image: dpage/pgadmin4
     container_name: farm_pgadmin
