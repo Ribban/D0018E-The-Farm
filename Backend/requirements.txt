@@ -1,5 +1,4 @@
 flask
-postgresql
 flask-sqlalchemy 
 psycopg2-binary
 

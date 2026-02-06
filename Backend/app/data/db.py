@@ -1,9 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 db = SQLAlchemy()
-engine = create_engine('postgresql://elias:6969@95.155.245.165:5432/farmdb')
+engine = create_engine(os.getenv('DATABASE_URL'))
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
