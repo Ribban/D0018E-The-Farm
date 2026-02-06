@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 function Header() {
   return (
     <header className="header">
-      <div className="logo">Lönås Gården</div>
+      <div className="logo">Lönåsgården</div>
       <nav className="nav">
         <button className="menu-btn">Meny</button>
         <button className="profile-btn">Profil</button>
