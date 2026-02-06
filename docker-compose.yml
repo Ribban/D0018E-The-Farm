@@ -17,14 +17,16 @@ services:
    # volumes:
     #  - db_data:/var/lib/postgresql/data # Sparar datan även om du startar om containern
   db:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     container_name: farm_postgres
+    command: ["postgres", "-c", "listen_addresses=*"]
     environment:
+      DATABASE_URL=postgresql: //elias:6969@95.155.245.165:5432/farmdb
       POSTGRES_USER: elias
       POSTGRES_PASSWORD: "6969"
       POSTGRES_DB: farmdb
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
 
   backend:
     build: ./backend

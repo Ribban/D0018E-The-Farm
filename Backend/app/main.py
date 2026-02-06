@@ -1,18 +1,23 @@
 from flask import Flask
 from data.db import db
 from data.queries import users_bp 
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 
+load_dotenv()
+
 # Konfiguration till docker-compose.yml
-DB_USER = "elias"
-DB_PASSWORD = "6969"
-DB_HOST = "localhost"
-DB_NAME = "farmdb"
-DB_PORT = "5432"
+user = os.getenv('DB_USER', 'elias')
+password = os.getenv('DB_PASSWORD', '6969')
+host = os.getenv('DB_HOST', '95.155.245.165') 
+port = os.getenv('DB_PORT', '5432')
+dbname = os.getenv('DB_NAME', 'farmdb')
+database_url = os.getenv('DATABASE_URL')
 
 # Använd psycopg2-drivrutinen för postgres
-app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Koppla databasen till appen
