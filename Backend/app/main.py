@@ -1,10 +1,13 @@
 from flask import Flask
+from flask_cors import CORS
 from data.db import db
 from data.queries import users_bp 
+from data.queries import products_bp
 from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 load_dotenv()
 
@@ -25,6 +28,7 @@ db.init_app(app)
 
 # Registrera routes
 app.register_blueprint(users_bp)
+app.register_blueprint(products_bp)
 
 @app.route("/")
 def index():

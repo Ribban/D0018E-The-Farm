@@ -1,4 +1,5 @@
 import '/src/App.css';
+import { useEffect, useState } from "react";
 
 function Header() {
   return (
@@ -13,20 +14,26 @@ function Header() {
   );
 }
 
-const mockProducts = [
-  { id: 1, name: 'Mjölk', price: '20Kr/L', description: 'Färsk mjölk från vår gård.' }
-];
-
 function ProductList() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetch("http://95.155.245.165:5000/api/products")
+      .then(res => res.json())
+      .then(data => setProducts(data))
+      .catch(err => console.error(err));
+  }, []);
+
   return (
     <section className="product-list">
       <h2>Produkter</h2>
       <div className="products">
-        {mockProducts.map(product => (
+        {products.map(product => (
           <div key={product.id} className="product-card">
             <h3>{product.name}</h3>
-            <p>{product.description}</p>
-            <span>{product.price}</span>
+            <p>Vikt: {product.weight} kg</p>
+            <p>Packdatum: {product.packaging_date}</p>
+            <span>{product.list_price} kr</span>
           </div>
         ))}
       </div>
