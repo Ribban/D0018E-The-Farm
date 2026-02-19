@@ -167,8 +167,21 @@ function App() {
     setCart((prev) => [...prev, product]);
   };
 
-  const handleRemoveFromCart = (idx) => {
-    setCart((prev) => prev.filter((_, i) => i !== idx));
+  const handleDecreaseQuantity = (id) => {
+    setCart((prev) => {
+      const idx = prev.findIndex((item) => item.id === id);
+      if (idx !== -1) {
+        return prev.slice(0, idx).concat(prev.slice(idx + 1));
+      }
+      return prev;
+    });
+  };
+
+  const handleIncreaseQuantity = (id) => {
+    const product = cart.find((item) => item.id === id);
+    if (product) {
+      setCart((prev) => [...prev, product]);
+    }
   };
 
   return (
@@ -186,7 +199,8 @@ function App() {
             <Cart
               cartItems={cart}
               onBack={() => setPage("products")}
-              onRemove={handleRemoveFromCart}
+              onDecrease={handleDecreaseQuantity}
+              onIncrease={handleIncreaseQuantity}
             />
           )}
         </main>

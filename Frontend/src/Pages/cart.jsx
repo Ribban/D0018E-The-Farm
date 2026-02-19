@@ -1,6 +1,19 @@
-function Cart({ cartItems, onBack, onRemove }) {
-  const total = cartItems.reduce(
-    (sum, item) => sum + (item.list_price || 0),
+function groupCartItems(cartItems) {
+  const grouped = {};
+  cartItems.forEach(item => {
+    if (!grouped[item.id]) {
+      grouped[item.id] = { ...item, quantity: 1 };
+    } else {
+      grouped[item.id].quantity += 1;
+    }
+  });
+  return Object.values(grouped);
+}
+
+function Cart({ cartItems, onBack, onRemove, onIncrease, onDecrease }) {
+  const groupedItems = groupCartItems(cartItems);
+  const total = groupedItems.reduce(
+    (sum, item) => sum + (item.list_price || 0) * item.quantity,
     0
   );
 
@@ -12,24 +25,22 @@ function Cart({ cartItems, onBack, onRemove }) {
         ← Tillbaka till produkter
       </button>
 
-      {cartItems.length === 0 ? (
+      {groupedItems.length === 0 ? (
         <p className="empty-cart">Kundvagnen är tom.</p>
       ) : (
         <>
           <ul className="cart-list">
-            {cartItems.map((item, idx) => (
-              <li key={idx} className="cart-item">
+            {groupedItems.map((item) => (
+              <li key={item.id} className="cart-item">
                 <div className="cart-item-info">
                   <strong>{item.name}</strong>
                   <span>{item.list_price} kr</span>
                 </div>
-
-                <button
-                  className="remove-btn"
-                  onClick={() => onRemove(idx)}
-                >
-                  Ta bort
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+                  <button className="remove-btn" style={{padding: '0.3em 0.7em', fontSize: '1.2em'}} onClick={() => onDecrease(item.id)}>-</button>
+                  <span style={{ minWidth: 24, display: 'inline-block', textAlign: 'center' }}>{item.quantity} st</span>
+                  <button className="remove-btn" style={{padding: '0.3em 0.7em', fontSize: '1.2em', background: '#4f8cff'}} onClick={() => onIncrease(item.id)}>+</button>
+                </div>
               </li>
             ))}
           </ul>
