@@ -5,7 +5,7 @@ from data.db import db
 from api.products import products_bp
 from dotenv import load_dotenv
 from api.auth import auth_bp
-from api import cart_bp
+from api.cart import cart_bp
 from datetime import timedelta
 import os
 
