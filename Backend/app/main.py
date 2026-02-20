@@ -6,6 +6,7 @@ from data.queries import users_bp
 from data.queries import products_bp
 from dotenv import load_dotenv
 from api.auth import auth_bp
+from api import cart_bp
 from datetime import timedelta
 import os
 
@@ -13,9 +14,13 @@ app = Flask(__name__)
 
 load_dotenv()
 
+
 app.config["JWT_SECRET_KEY"] = "please-remember-to-change-me"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
-jwt = JWTManager(app) # Initiera JWT här
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
+app.config['JWT_HEADER_NAME'] = 'Authorization'
+app.config['JWT_HEADER_TYPE'] = 'Bearer'
+jwt = JWTManager(app)
 
 # Konfiguration till docker-compose.yml
 user = os.getenv('DB_USER', 'elias')
@@ -35,9 +40,10 @@ db.init_app(app)
 # Registrera routes
 app.register_blueprint(users_bp)
 app.register_blueprint(products_bp)
-app.register_blueprint(auth_bp)
+app.register_blueprint(auth_bp, url_prefix='/api')
+app.register_blueprint(cart_bp, url_prefix='/api')
 
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, expose_headers=["Authorization"], allow_headers="*")
 
 @app.route("/")
 def index():

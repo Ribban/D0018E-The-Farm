@@ -1,5 +1,6 @@
 import Login from "./Pages/login"
 import Profile from "./Pages/profile"
+import Register from "./Pages/register"
 import useToken from "./Pages/useToken"
 import "./App.css";
 import { useEffect, useState } from "react";
@@ -119,16 +120,14 @@ function ProductList({ onAddToCart }) {
         >
           <option value="-asc">Ingen</option>
 
-          {sortOptions.map((opt) => (
-            <>
-              <option key={opt.value + "-asc"} value={opt.value + "-asc"}>
-                {opt.label} (Stigande)
-              </option>
-              <option key={opt.value + "-desc"} value={opt.value + "-desc"}>
-                {opt.label} (Sänkande)
-              </option>
-            </>
-          ))}
+          {sortOptions.map((opt) => [
+            <option key={opt.value + "-asc"} value={opt.value + "-asc"}>
+              {opt.label} (Stigande)
+            </option>,
+            <option key={opt.value + "-desc"} value={opt.value + "-desc"}>
+              {opt.label} (Sänkande)
+            </option>,
+          ])}
         </select>
       </div>
 
@@ -178,37 +177,75 @@ function App() {
   const [cart, setCart] = useState([]);
   const { token, removeToken, setToken } = useToken();
 
+  useEffect(() => {
+    if (!token || token === "undefined" || token === null) {
+      setCart([]);
+      return;
+    }
+    axios.get("http://95.155.245.165:5000/api/cart", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => setCart(res.data.items || []))
+    .catch(() => setCart([]));
+  }, [token]);
+
   const Logout = () => {
     axios({
       method: "POST",
-      url: "http://95.155.245.165:5000/logout",
+      url: "http://95.155.245.165:5000/api/logout",
     })
-    .then(() => {
-      removeToken(); 
-      setPage("products"); 
-    })
-    .catch((err) => console.error("Logout failed", err));
+      .then(() => {
+        removeToken();
+        setPage("products");
+      })
+      .catch((err) => console.error("Logout failed", err));
   };
 
   const handleAddToCart = (product) => {
-    setCart((prev) => [...prev, product]);
+    if (!token) return;
+    axios.post("http://95.155.245.165:5000/api/cart/add", {
+      product_id: product.id,
+      quantity: 1
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => setCart(res.data.items || []));
   };
 
   const handleDecreaseQuantity = (id) => {
-    setCart((prev) => {
-      const idx = prev.findIndex((item) => item.id === id);
-      if (idx !== -1) {
-        return prev.slice(0, idx).concat(prev.slice(idx + 1));
-      }
-      return prev;
-    });
+    if (!token) return;
+    const item = cart.find((item) => item.product_id === id || item.id === id);
+    if (!item) return;
+    const newQty = (item.quantity || 1) - 1;
+    if (newQty <= 0) {
+      axios.post("http://95.155.245.165:5000/api/cart/remove", {
+        product_id: id
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setCart(res.data.items || []));
+    } else {
+      axios.post("http://95.155.245.165:5000/api/cart/update", {
+        product_id: id,
+        quantity: newQty
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setCart(res.data.items || []));
+    }
   };
 
   const handleIncreaseQuantity = (id) => {
-    const product = cart.find((item) => item.id === id);
-    if (product) {
-      setCart((prev) => [...prev, product]);
-    }
+    if (!token) return;
+    const item = cart.find((item) => item.product_id === id || item.id === id);
+    const newQty = (item?.quantity || 0) + 1;
+    axios.post("http://95.155.245.165:5000/api/cart/update", {
+      product_id: id,
+      quantity: newQty
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => setCart(res.data.items || []));
   };
 
   return (
@@ -238,11 +275,19 @@ function App() {
             />
           )}
 
+
           {page === "login" && (
-            <Login setToken={(newToken) => {
-              setToken(newToken);
-              setPage("products"); 
-            }} />
+            <Login 
+              setToken={(newToken) => {
+                setToken(newToken);
+                setPage("products"); 
+              }}
+              onRegisterClick={() => setPage("register")}
+            />
+          )}
+
+          {page === "register" && (
+            <Register onBackToLogin={() => setPage("login")} />
           )}
 
           {page === "profile" && (

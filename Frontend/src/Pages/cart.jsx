@@ -1,4 +1,11 @@
 function groupCartItems(cartItems) {
+  if (cartItems.length > 0 && cartItems[0].quantity !== undefined) {
+    return cartItems.map(item => ({
+      ...item,
+      id: item.product_id || item.id,
+      name: item.name || item.product_name
+    }));
+  }
   const grouped = {};
   cartItems.forEach(item => {
     if (!grouped[item.id]) {

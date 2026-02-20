@@ -14,7 +14,7 @@ function Login(props) {
     function logMeIn(event) {
       axios({
         method: "POST",
-        url:"http://95.155.245.165:5000/token",
+        url:"http://95.155.245.165:5000/api/token",
         data:{
           email: loginForm.email,
           password: loginForm.password
@@ -46,22 +46,28 @@ function Login(props) {
     return (
       <div>
         <h1>Login</h1>
-          <form className="login">
-            <input onChange={handleChange} 
-                  type="email"
-                  text={loginForm.email} 
-                  name="email" 
-                  placeholder="Email" 
-                  value={loginForm.email} />
-            <input onChange={handleChange} 
-                  type="password"
-                  text={loginForm.password} 
-                  name="password" 
-                  placeholder="Password" 
-                  value={loginForm.password} />
+        <form className="login">
+          <input onChange={handleChange}
+            type="email"
+            text={loginForm.email}
+            name="email"
+            placeholder="Email"
+            value={loginForm.email} />
+          <input onChange={handleChange}
+            type="password"
+            text={loginForm.password}
+            name="password"
+            placeholder="Password"
+            value={loginForm.password} />
 
           <button onClick={logMeIn}>Submit</button>
         </form>
+        <div style={{ marginTop: '1em' }}>
+          <span>Har du inget konto? </span>
+          <button type="button" onClick={() => props.onRegisterClick && props.onRegisterClick()}>
+            Registrera dig här
+          </button>
+        </div>
       </div>
     );
 }

@@ -8,6 +8,7 @@ class User(db.Model):
     last_name = db.Column(db.String)
     phone = db.Column(db.String)
     email = db.Column(db.String)
+    password = db.Column(db.String)  # <-- Add this line
     Admin = db.Column(db.Boolean)
     
     orders = db.relationship('Order', backref='customer')
