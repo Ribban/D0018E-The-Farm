@@ -1,4 +1,5 @@
 from data.db import db
+from datetime import datetime, timezone
 
 class User(db.Model):
     __tablename__ = 'User'
@@ -8,7 +9,7 @@ class User(db.Model):
     last_name = db.Column(db.String)
     phone = db.Column(db.String)
     email = db.Column(db.String)
-    password = db.Column(db.String)  # <-- Add this line
+    password = db.Column(db.String)
     Admin = db.Column(db.Boolean)
     
     orders = db.relationship('Order', backref='customer')
@@ -59,3 +60,19 @@ class OrderItem(db.Model):
     
     # Foreign Key [cite: 7]
     product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'))
+
+class ShoppingCart(db.Model):
+    __tablename__ = 'shopping_cart'
+    
+    cart_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.User_id'))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    items = db.relationship('ShoppingCartItem', backref='cart', lazy=True, cascade="all, delete-orphan")
+
+class ShoppingCartItem(db.Model):
+    __tablename__ = 'shopping_cart_items'
+    
+    cart_id = db.Column(db.Integer, db.ForeignKey('shopping_cart.cart_id'), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'), primary_key=True)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    product = db.relationship('Product')

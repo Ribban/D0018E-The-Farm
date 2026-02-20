@@ -1,50 +1,59 @@
-
-from flask import Blueprint, request, jsonify
 from data.db import db
-from data.models import User
-from data.models import Product
+from data.models import User, Product, ShoppingCart, ShoppingCartItem
 
-# Skapa en Blueprint
-users_bp = Blueprint('users', __name__)
+# PRODUKT
+def get_all_products():
+    return Product.query.all()
 
-@users_bp.route('/users', methods=['POST'])
-def create_user():
-    data = request.json
-    #  fälten från schema [cite: 1]
-    new_user = User(
-        User_id=data.get('id'), 
-        first_name=data.get('first_name'),
-        email=data.get('email'),
+# ANVÄNDARE
+def get_user_by_email(email):
+    return User.query.filter_by(email=email).first()
+
+def get_user_by_id(user_id):
+    return User.query.get(user_id)
+
+def add_user(first_name, last_name, phone, email, password):
+    user = User(
+        first_name=first_name,
+        last_name=last_name,
+        phone=phone,
+        email=email,
+        password=password,
         Admin=False
     )
-    db.session.add(new_user)
+    db.session.add(user)
     db.session.commit()
-    return f"User {new_user.first_name} created successfully!"
+    return user
 
-@users_bp.route('/users', methods=['GET'])
-def get_users():
-    users = User.query.all()
-    
-    return jsonify([{
-        'id': user.User_id, 
-        'name': user.first_name, 
-        'email': user.email
-    } for user in users])
+# KUNDVAGN
+def get_cart_by_user(user_id):
+    cart = ShoppingCart.query.filter_by(user_id=user_id).order_by(ShoppingCart.created_at.desc()).first()
+    if not cart:
+        cart = ShoppingCart(user_id=user_id)
+        db.session.add(cart)
+        db.session.commit()
+    return cart
 
-products_bp = Blueprint('products_bp', __name__)
+def add_item_to_cart(cart_id, product_id, quantity):
+    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
+    if item:
+        item.quantity += quantity
+    else:
+        new_item = ShoppingCartItem(cart_id=cart_id, product_id=product_id, quantity=quantity)
+        db.session.add(new_item)
+    db.session.commit()
 
-@products_bp.route('/api/products', methods=['GET'])
-def get_products():
-    products = Product.query.all()
-    result = []
-    for p in products:
-        result.append({
-            "id": p.product_id,
-            "name": p.product_name,
-            "weight": float(p.weight) if p.weight else None,
-            "packaging_date": str(p.Packaging_date),
-            "list_price": float(p.list_price) if p.list_price else None,
-            "animal_age": p.Animal_Age,
-            "category_id": p.category_id
-        })
-    return jsonify(result)
+def update_item_quantity(cart_id, product_id, quantity):
+    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
+    if item:
+        if quantity <= 0:
+            db.session.delete(item)
+        else:
+            item.quantity = quantity
+        db.session.commit()
+
+def remove_item_from_cart(cart_id, product_id):
+    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
+    if item:
+        db.session.delete(item)
+        db.session.commit()

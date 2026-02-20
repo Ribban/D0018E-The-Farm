@@ -2,8 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from data.db import db
-from data.queries import users_bp 
-from data.queries import products_bp
+from api.products import products_bp
 from dotenv import load_dotenv
 from api.auth import auth_bp
 from api import cart_bp
@@ -37,9 +36,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Koppla databasen till appen
 db.init_app(app)
 
-# Registrera routes
-app.register_blueprint(users_bp)
-app.register_blueprint(products_bp)
+# Registrera blueprints
+app.register_blueprint(products_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(cart_bp, url_prefix='/api')
 
