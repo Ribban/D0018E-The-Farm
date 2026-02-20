@@ -5,6 +5,10 @@ from data.queries import get_user_by_email, get_user_by_id, add_user
 
 auth_bp = Blueprint('auth_bp', __name__)
 
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    return jsonify({'msg': 'Logged out'}), 200
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
