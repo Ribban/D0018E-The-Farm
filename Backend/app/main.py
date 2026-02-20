@@ -1,15 +1,21 @@
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from data.db import db
 from data.queries import users_bp 
 from data.queries import products_bp
 from dotenv import load_dotenv
+from api.auth import auth_bp
+from datetime import timedelta
 import os
 
 app = Flask(__name__)
-CORS(app)
 
 load_dotenv()
+
+app.config["JWT_SECRET_KEY"] = "please-remember-to-change-me"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+jwt = JWTManager(app) # Initiera JWT här
 
 # Konfiguration till docker-compose.yml
 user = os.getenv('DB_USER', 'elias')
@@ -29,6 +35,9 @@ db.init_app(app)
 # Registrera routes
 app.register_blueprint(users_bp)
 app.register_blueprint(products_bp)
+app.register_blueprint(auth_bp)
+
+CORS(app)
 
 @app.route("/")
 def index():

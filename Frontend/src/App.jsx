@@ -1,26 +1,40 @@
-import "/src/App.css";
+import Login from "./Pages/login"
+import Profile from "./Pages/profile"
+import useToken from "./Pages/useToken"
+import "./App.css";
 import { useEffect, useState } from "react";
 import Cart from "./Pages/cart";
+import axios from "axios";
 
-function Header({ onCartClick, onHomeClick }) {
+function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, token }) {
   return (
     <header className="header">
       <div className="logo" onClick={onHomeClick} style={{ cursor: "pointer" }}>
         Lönåsgården
       </div>
-
       <nav className="nav">
         <button className="menu-btn" onClick={onHomeClick}>
           Meny
         </button>
 
-        <button className="profile-btn">
+        {token && 
+        <button className="profile-btn" onClick={onProfileClick}>
           Profil
-        </button>
-
+        </button>}
+        
         <button className="cart-btn" onClick={onCartClick}>
           Kundvagn
         </button>
+
+        {token && token !== "" && token !== undefined ? (
+          <button className="logout-btn" onClick={logMeOut}> 
+            Logga ut
+          </button>
+        ) : (
+          <button className="login-btn" onClick={onLoginClick}> 
+            Logga in
+          </button>
+        )}
       </nav>
     </header>
   );
@@ -162,6 +176,19 @@ function ProductList({ onAddToCart }) {
 function App() {
   const [page, setPage] = useState("products");
   const [cart, setCart] = useState([]);
+  const { token, removeToken, setToken } = useToken();
+
+  const Logout = () => {
+    axios({
+      method: "POST",
+      url: "http://95.155.245.165:5000/logout",
+    })
+    .then(() => {
+      removeToken(); 
+      setPage("products"); 
+    })
+    .catch((err) => console.error("Logout failed", err));
+  };
 
   const handleAddToCart = (product) => {
     setCart((prev) => [...prev, product]);
@@ -190,18 +217,36 @@ function App() {
         <Header
           onCartClick={() => setPage("cart")}
           onHomeClick={() => setPage("products")}
+          onProfileClick={() => setPage("profile")}
+          onLoginClick={() => setPage("login")} 
+          logMeOut={Logout}
+          token={token}
         />
-
         <main>
-          {page === "products" ? (
-            <ProductList onAddToCart={handleAddToCart} />
-          ) : (
+          {page === "products" && (
+            <ProductList
+             onAddToCart={handleAddToCart} 
+             />
+          )}
+
+          {page === "cart" && (
             <Cart
               cartItems={cart}
               onBack={() => setPage("products")}
               onDecrease={handleDecreaseQuantity}
               onIncrease={handleIncreaseQuantity}
             />
+          )}
+
+          {page === "login" && (
+            <Login setToken={(newToken) => {
+              setToken(newToken);
+              setPage("products"); 
+            }} />
+          )}
+
+          {page === "profile" && (
+            <Profile token={token} setToken={setToken} />
           )}
         </main>
       </div>
