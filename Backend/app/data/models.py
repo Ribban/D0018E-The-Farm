@@ -49,17 +49,12 @@ class Order(db.Model):
     User_id = db.Column(db.Integer, db.ForeignKey('User.User_id'))
 
 class OrderItem(db.Model):
-    
     __tablename__ = 'order_items'
-    
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.order_id'), primary_key=True) 
-    item_id = db.Column(db.Integer, unique=True, nullable=False) 
-    
+    item_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.order_id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'))
     quantity = db.Column(db.Integer)
     list_price = db.Column(db.Numeric(10, 2))
-    
-    # Foreign Key [cite: 7]
-    product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'))
 
 class ShoppingCart(db.Model):
     __tablename__ = 'shopping_cart'

@@ -6,8 +6,10 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import Cart from "./Pages/cart";
 import axios from "axios";
+import Checkout from "./Pages/checkout";
+import AdminProducts from "./Pages/admin";
 
-function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, token }) {
+function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, onAdminClick, token, isAdmin }) {
   return (
     <header className="header">
       <div className="logo" onClick={onHomeClick} style={{ cursor: "pointer" }}>
@@ -17,16 +19,18 @@ function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileCli
         <button className="menu-btn" onClick={onHomeClick}>
           Meny
         </button>
-
+        {isAdmin && (
+          <button className="admin-btn" onClick={onAdminClick}>
+            Admin
+          </button>
+        )}
         {token && 
         <button className="profile-btn" onClick={onProfileClick}>
           Profil
         </button>}
-        
         <button className="cart-btn" onClick={onCartClick}>
           Kundvagn
         </button>
-
         {token && token !== "" && token !== undefined ? (
           <button className="logout-btn" onClick={logMeOut}> 
             Logga ut
@@ -176,6 +180,19 @@ function App() {
   const [page, setPage] = useState("products");
   const [cart, setCart] = useState([]);
   const { token, removeToken, setToken } = useToken();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+  const [checkoutSuccess, setCheckoutSuccess] = useState("");
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!token) { setIsAdmin(false); return; }
+    axios.get("http://95.155.245.165:5000/api/profile", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => setIsAdmin(res.data.Admin === true || res.data.Admin === 1))
+      .catch(() => setIsAdmin(false));
+  }, [token]);
 
   useEffect(() => {
     if (!token || token === "undefined" || token === null) {
@@ -248,6 +265,26 @@ function App() {
     .then(res => setCart(res.data.items || []));
   };
 
+  const handleCheckout = ({ pickup_date, payment_method }) => {
+    setCheckoutLoading(true);
+    setCheckoutError("");
+    setCheckoutSuccess("");
+    axios.post("http://95.155.245.165:5000/api/cart/checkout", {
+      pickup_date,
+      payment_method
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        setCheckoutSuccess(res.data.order_id);
+        setCart([]);
+      })
+      .catch(err => {
+        setCheckoutError(err.response?.data?.msg || "Något gick fel");
+      })
+      .finally(() => setCheckoutLoading(false));
+  };
+
   return (
     <div className="App">
       <div className="page-container">
@@ -256,8 +293,10 @@ function App() {
           onHomeClick={() => setPage("products")}
           onProfileClick={() => setPage("profile")}
           onLoginClick={() => setPage("login")} 
+          onAdminClick={() => setPage("admin")}
           logMeOut={Logout}
           token={token}
+          isAdmin={isAdmin}
         />
         <main>
           {page === "products" && (
@@ -267,14 +306,33 @@ function App() {
           )}
 
           {page === "cart" && (
-            <Cart
+            <>
+              <Cart
+                cartItems={cart}
+                onBack={() => setPage("products")}
+                onDecrease={handleDecreaseQuantity}
+                onIncrease={handleIncreaseQuantity}
+              />
+              {cart.length > 0 && (
+                <button className="checkout-btn" onClick={() => setPage("checkout")}>Till kassan</button>
+              )}
+            </>
+          )}
+
+          {page === "checkout" && (
+            <Checkout
               cartItems={cart}
-              onBack={() => setPage("products")}
-              onDecrease={handleDecreaseQuantity}
-              onIncrease={handleIncreaseQuantity}
+              onBack={() => setPage("cart")}
+              onOrder={handleCheckout}
+              loading={checkoutLoading}
+              error={checkoutError}
+              success={checkoutSuccess}
             />
           )}
 
+          {page === "admin" && (
+            <AdminProducts token={token} />
+          )}
 
           {page === "login" && (
             <Login 

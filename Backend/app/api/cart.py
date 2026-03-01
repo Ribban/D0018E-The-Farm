@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from data.queries import get_cart_by_user, add_item_to_cart, update_item_quantity, remove_item_from_cart
+from data.queries import get_cart_by_user, add_item_to_cart, update_item_quantity, remove_item_from_cart, create_order_from_cart
 
 cart_bp = Blueprint('cart_bp', __name__)
 
@@ -42,3 +42,16 @@ def remove_from_cart():
     cart = get_cart_by_user(get_jwt_identity())
     remove_item_from_cart(cart.cart_id, data.get("product_id"))
     return get_cart()
+
+@cart_bp.route("/cart/checkout", methods=["POST"])
+@jwt_required()
+def checkout_cart():
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+    pickup_date = data.get("pickup_date")
+    payment_method = data.get("payment_method")
+    order = create_order_from_cart(user_id, pickup_date, payment_method)
+    if order:
+        return jsonify({"msg": "Order skapad", "order_id": order.order_id}), 201
+    else:
+        return jsonify({"msg": "Kundvagnen är tom eller fel inträffade"}), 400
