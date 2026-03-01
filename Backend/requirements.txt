@@ -3,7 +3,10 @@ flask-sqlalchemy
 flask-cors
 psycopg2-binary
 flask_jwt_extended
-flask-cors
+psycopg2-binary
+python-dotenv
+werkzeug
+sqlalchemy
 
 pytest
 pytest-flask>=1.3
