@@ -235,7 +235,7 @@ function App() {
     if (!item) return;
     const newQty = (item.quantity || 1) - 1;
     if (newQty <= 0) {
-      axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/add`), {
+      axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/remove`), {
         product_id: id
       }, {
         headers: { Authorization: `Bearer ${token}` }
