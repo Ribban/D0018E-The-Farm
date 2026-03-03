@@ -15,7 +15,7 @@ function Profile(props) {
     }
     axios({
       method: "GET",
-      url: (`${import.meta.env.VITE_SERVER_URL}/api/cart/profile`),
+      url: (`${import.meta.env.VITE_SERVER_URL}/api/profile`),
       headers: {
         Authorization: 'Bearer ' + props.token,
         Accept: 'application/json',
