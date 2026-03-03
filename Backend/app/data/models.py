@@ -28,7 +28,7 @@ class Product(db.Model):
     product_id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String)
     weight = db.Column(db.Numeric(10, 2))
-    Packaging_date = db.Column(db.SmallInteger)
+    Packaging_date = db.Column(db.DATE)
     list_price = db.Column(db.Numeric(10, 2))
     Animal_Age = db.Column(db.SmallInteger)
     

@@ -59,7 +59,7 @@ function AdminProducts({ token }) {
       <form onSubmit={handleSubmit}>
         <input name="name" placeholder="Namn" value={form.name} onChange={handleChange} required />
         <input name="weight" placeholder="Vikt/Volym" value={form.weight} onChange={handleChange} required />
-        <input name="packaging_date" placeholder="Packdatum (YYYYMMDD)" value={form.packaging_date} onChange={handleChange} required />
+        <input name="packaging_date" placeholder="Packdatum (YYYY-MM-DD)" value={form.packaging_date} onChange={handleChange} required />
         <input name="list_price" placeholder="Pris" value={form.list_price} onChange={handleChange} required />
         <input name="animal_age" placeholder="Ålder (valfritt)" value={form.animal_age} onChange={handleChange} />
         <input name="category_id" placeholder="Kategori-ID" value={form.category_id} onChange={handleChange} required />
