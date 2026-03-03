@@ -20,7 +20,7 @@ function Register({ onBackToLogin }) {
     e.preventDefault();
     axios({
       method: 'POST',
-      url: 'http://95.155.245.165:5000/api/register',
+      url: (`${import.meta.env.VITE_SERVER_URL}/api/register`),
       data: form
     })
       .then((res) => {

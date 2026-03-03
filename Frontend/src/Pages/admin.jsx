@@ -9,7 +9,7 @@ function AdminProducts({ token }) {
   const [success, setSuccess] = useState("");
 
   const fetchProducts = () => {
-    axios.get("http://95.155.245.165:5000/api/products")
+    axios.get((`${import.meta.env.VITE_SERVER_URL}/api/products`))
       .then(res => setProducts(res.data))
       .catch(() => setProducts([]));
   };
@@ -24,8 +24,8 @@ function AdminProducts({ token }) {
     e.preventDefault();
     setError(""); setSuccess("");
     const req = editId
-      ? axios.put(`http://95.155.245.165:5000/api/products/${editId}`, form, { headers: { Authorization: `Bearer ${token}` } })
-      : axios.post("http://95.155.245.165:5000/api/products", form, { headers: { Authorization: `Bearer ${token}` } });
+      ? axios.put(`${import.meta.env.VITE_SERVER_URL}/api/products/${editId}`, form, { headers: { Authorization: `Bearer ${token}` } })
+      : axios.post((`${import.meta.env.VITE_SERVER_URL}/api/products`), form, { headers: { Authorization: `Bearer ${token}` } });
     req.then(() => {
       setSuccess(editId ? "Uppdaterad!" : "Skapad!");
       setForm({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "" });
@@ -48,7 +48,7 @@ function AdminProducts({ token }) {
 
   const handleDelete = id => {
     if (!window.confirm("Ta bort produkten?")) return;
-    axios.delete(`http://95.155.245.165:5000/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(() => { setSuccess("Borttagen!"); fetchProducts(); })
       .catch(err => setError(err.response?.data?.msg || "Fel vid borttagning"));
   };

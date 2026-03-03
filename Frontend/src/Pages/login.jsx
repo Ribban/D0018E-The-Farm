@@ -14,7 +14,7 @@ function Login(props) {
     function logMeIn(event) {
       axios({
         method: "POST",
-        url:"http://95.155.245.165:5000/api/token",
+        url:(`${import.meta.env.VITE_SERVER_URL}/api/token`),
         data:{
           email: loginForm.email,
           password: loginForm.password

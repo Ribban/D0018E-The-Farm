@@ -64,7 +64,7 @@ function ProductList({ onAddToCart }) {
   };
 
   useEffect(() => {
-    fetch("http://95.155.245.165:5000/api/products")
+    fetch(`${import.meta.env.VITE_SERVER_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error(err));
@@ -187,7 +187,7 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     if (!token) { setIsAdmin(false); return; }
-    axios.get("http://95.155.245.165:5000/api/profile", {
+    axios.get((`${import.meta.env.VITE_SERVER_URL}/api/profile`), {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setIsAdmin(res.data.Admin === true || res.data.Admin === 1))
@@ -199,7 +199,7 @@ function App() {
       setCart([]);
       return;
     }
-    axios.get("http://95.155.245.165:5000/api/cart", {
+    axios.get((`${import.meta.env.VITE_SERVER_URL}/api/cart`), {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => setCart(res.data.items || []))
@@ -209,7 +209,7 @@ function App() {
   const Logout = () => {
     axios({
       method: "POST",
-      url: "http://95.155.245.165:5000/api/logout",
+      url: `${import.meta.env.VITE_SERVER_URL}/api/logout`,
     })
       .then(() => {
         removeToken();
@@ -220,7 +220,7 @@ function App() {
 
   const handleAddToCart = (product) => {
     if (!token) return;
-    axios.post("http://95.155.245.165:5000/api/cart/add", {
+    axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/add`), {
       product_id: product.id,
       quantity: 1
     }, {
@@ -235,14 +235,14 @@ function App() {
     if (!item) return;
     const newQty = (item.quantity || 1) - 1;
     if (newQty <= 0) {
-      axios.post("http://95.155.245.165:5000/api/cart/remove", {
+      axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/add`), {
         product_id: id
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => setCart(res.data.items || []));
     } else {
-      axios.post("http://95.155.245.165:5000/api/cart/update", {
+      axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/update`), {
         product_id: id,
         quantity: newQty
       }, {
@@ -256,7 +256,7 @@ function App() {
     if (!token) return;
     const item = cart.find((item) => item.product_id === id || item.id === id);
     const newQty = (item?.quantity || 0) + 1;
-    axios.post("http://95.155.245.165:5000/api/cart/update", {
+    axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/update`), {
       product_id: id,
       quantity: newQty
     }, {
@@ -269,7 +269,7 @@ function App() {
     setCheckoutLoading(true);
     setCheckoutError("");
     setCheckoutSuccess("");
-    axios.post("http://95.155.245.165:5000/api/cart/checkout", {
+    axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/checkout`), {
       pickup_date,
       payment_method
     }, {
