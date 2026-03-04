@@ -45,6 +45,7 @@ class Order(db.Model):
     required_date = db.Column(db.Date)
     Pickup_date = db.Column(db.Date)
     
+    items = db.relationship('OrderItem', backref='order', lazy=True)
     # Foreign Key [cite: 7]
     User_id = db.Column(db.Integer, db.ForeignKey('User.User_id'))
 
@@ -55,6 +56,8 @@ class OrderItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'))
     quantity = db.Column(db.Integer)
     list_price = db.Column(db.Numeric(10, 2))
+
+    product = db.relationship('Product', lazy=True)
 
 class ShoppingCart(db.Model):
     __tablename__ = 'shopping_cart'

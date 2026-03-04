@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from data.queries import get_cart_by_user, add_item_to_cart, update_item_quantity, remove_item_from_cart, create_order_from_cart
-
+from data.queries import get_cart_by_user, add_item_to_cart, update_item_quantity, remove_item_from_cart, create_order_from_cart, User
+from api.orderMail import send_order_confirmation
+from data.db import db_session
 cart_bp = Blueprint('cart_bp', __name__)
 
 @cart_bp.route("/cart", methods=["GET"])
@@ -50,8 +51,21 @@ def checkout_cart():
     data = request.get_json() or {}
     pickup_date = data.get("pickup_date")
     payment_method = data.get("payment_method")
+
     order = create_order_from_cart(user_id, pickup_date, payment_method)
     if order:
+        try:
+            user = db_session.get(User, order.User_id)
+            if user and user.email:
+                send_order_confirmation(user.email, order)
+            else:
+                return jsonify({"msg": "fel på ifsats"})
+        except Exception as e:
+            print(f"Ett fel uppstod vid försök att skicka mejl: {e}")
+
         return jsonify({"msg": "Order skapad", "order_id": order.order_id}), 201
     else:
         return jsonify({"msg": "Kundvagnen är tom eller fel inträffade"}), 400
+    
+
+    

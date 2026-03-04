@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from api.auth import auth_bp
 from api.cart import cart_bp
 from datetime import timedelta
+from api.orderMail import mail
 import os
 
 app = Flask(__name__)
@@ -20,6 +21,17 @@ app.config['JWT_TOKEN_LOCATION'] = ['headers']
 app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
 jwt = JWTManager(app)
+
+#mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') # Ditt 16-siffriga App-lösenord
+app.config['MAIL_DEFAULT_SENDER'] = ('Gårdsbutiken', os.getenv('MAIL_USERNAME'))
+
+mail.init_app(app)
 
 # Konfiguration till docker-compose.yml
 user = os.getenv('DB_USER', 'elias')

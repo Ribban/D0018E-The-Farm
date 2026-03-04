@@ -35,3 +35,5 @@ env/
 .env
 .env.local
 .env.*.local
+Frontend/.env
+Backend/.env
