@@ -1,5 +1,5 @@
 from data.db import db
-from data.models import User, Product, ShoppingCart, ShoppingCartItem
+from data.models import User, Product, ShoppingCart, ShoppingCartItem, Comment, Order, OrderItem
 
 # PRODUKT
 def get_all_products():
@@ -25,38 +25,39 @@ def add_user(first_name, last_name, phone, email, password):
     db.session.commit()
     return user
 
-# KUNDVAGN
-def get_cart_by_user(user_id):
-    cart = ShoppingCart.query.filter_by(user_id=user_id).order_by(ShoppingCart.created_at.desc()).first()
-    if not cart:
-        cart = ShoppingCart(user_id=user_id)
-        db.session.add(cart)
-        db.session.commit()
-    return cart
+def get_comments_for_product(product_id):
+    return Comment.query.filter_by(product_id=product_id).order_by(Comment.created_at.desc()).all()
 
-def add_item_to_cart(cart_id, product_id, quantity):
-    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
-    if item:
-        item.quantity += quantity
-    else:
-        new_item = ShoppingCartItem(cart_id=cart_id, product_id=product_id, quantity=quantity)
-        db.session.add(new_item)
+def get_user_comment_for_product(product_id, user_id):
+    return Comment.query.filter_by(product_id=product_id, user_id=int(user_id)).first()
+
+def add_comment(product_id, user_id, text, grade=None):
+    comment = Comment(
+        product_id=product_id,
+        user_id=int(user_id),
+        text=text,
+        grade=grade
+    )
+    db.session.add(comment)
     db.session.commit()
+    return comment
 
-def update_item_quantity(cart_id, product_id, quantity):
-    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
-    if item:
-        if quantity <= 0:
-            db.session.delete(item)
-        else:
-            item.quantity = quantity
+def update_comment(comment_id, user_id, text, grade=None):
+    comment = Comment.query.filter_by(comment_id=comment_id, user_id=int(user_id)).first()
+    if comment:
+        comment.text = text
+        comment.grade = grade
         db.session.commit()
+        return comment
+    return None
 
-def remove_item_from_cart(cart_id, product_id):
-    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
-    if item:
-        db.session.delete(item)
+def delete_comment(comment_id, user_id):
+    comment = Comment.query.get(comment_id)
+    if comment and comment.user_id == int(user_id):
+        db.session.delete(comment)
         db.session.commit()
+        return True
+    return False
 
 # CRUD för produkter
 def create_product(data):
@@ -92,24 +93,53 @@ def delete_product(product_id):
     db.session.delete(product)
     db.session.commit()
     return True
-from data.models import Order, OrderItem
 
-# ORDER
+def get_cart_by_user(user_id):
+    cart = ShoppingCart.query.filter_by(user_id=user_id).order_by(ShoppingCart.created_at.desc()).first()
+    if not cart:
+        cart = ShoppingCart(user_id=user_id)
+        db.session.add(cart)
+        db.session.commit()
+    return cart
+
+def add_item_to_cart(cart_id, product_id, quantity):
+    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
+    if item:
+        item.quantity += quantity
+    else:
+        new_item = ShoppingCartItem(cart_id=cart_id, product_id=product_id, quantity=quantity)
+        db.session.add(new_item)
+    db.session.commit()
+
+def update_item_quantity(cart_id, product_id, quantity):
+    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
+    if item:
+        if quantity <= 0:
+            db.session.delete(item)
+        else:
+            item.quantity = quantity
+        db.session.commit()
+
+def remove_item_from_cart(cart_id, product_id):
+    item = ShoppingCartItem.query.filter_by(cart_id=cart_id, product_id=product_id).first()
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+
 def create_order_from_cart(user_id, pickup_date, payment_method):
     cart = get_cart_by_user(user_id)
     if not cart or not cart.items:
         return None
-    # Skapa order
     order = Order(
         User_id=user_id,
-        order_status=1,  # 1 = ny order
+        order_status=1,
         order_date=db.func.current_date(),
         required_date=None,
         Pickup_date=pickup_date
     )
     db.session.add(order)
-    db.session.flush()  # Få order_id
-    # Skapa orderrader
+    db.session.flush()
+
     for item in cart.items:
         order_item = OrderItem(
             order_id=order.order_id,
@@ -119,7 +149,7 @@ def create_order_from_cart(user_id, pickup_date, payment_method):
             list_price=item.product.list_price
         )
         db.session.add(order_item)
-    # Töm kundvagn
+
     for item in cart.items:
         db.session.delete(item)
     db.session.commit()

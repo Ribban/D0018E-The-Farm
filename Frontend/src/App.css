@@ -1,3 +1,4 @@
+/* Most of this is given by AI, I have no sense of color combinations /Elias */
 @media (max-width: 600px) {
   .sort-controls {
     flex-wrap: nowrap !important;
@@ -143,6 +144,9 @@ h2 {
   transition: 0.2s ease;
 
   text-align: center;
+  
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
@@ -156,9 +160,18 @@ h2 {
   font-size: 1.2rem;
 }
 
+.product-info {
+  flex: 0 0 auto;
+}
+
+.product-info p {
+  margin: 0.8rem 0;
+}
+
 .product-card span {
   display: block;
-  margin-top: 0.8rem;
+  margin-top: auto;
+  padding-top: 0.8rem;
   font-weight: bold;
   font-size: 1.1rem;
   color: #1e90ff;
@@ -311,4 +324,348 @@ h2 {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.comments-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #1e222b;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.comments-section h3 {
+  color: #4f8cff;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.average-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #2d313a;
+  border-radius: 8px;
+}
+
+.average-rating .review-count {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star-rating .star {
+  font-size: 1.3rem;
+  color: #555;
+  transition: color 0.2s;
+}
+
+.star-rating .star.filled {
+  color: #ffc107;
+}
+
+.star-rating .star:hover {
+  color: #ffdb4d;
+}
+
+.new-comment-form {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #2d313a;
+  border-radius: 8px;
+}
+
+.new-comment-form h4 {
+  margin: 0 0 0.8rem 0;
+  color: #f5f6fa;
+}
+
+.grade-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.grade-input label {
+  color: #aaa;
+}
+
+.new-comment-form textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #23272f;
+  color: #f5f6fa;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 0.8rem;
+}
+
+.new-comment-form textarea:focus {
+  outline: none;
+  border-color: #4f8cff;
+}
+
+.new-comment-form h4 {
+  margin: 0 0 0.8rem 0;
+  color: #f5f6fa;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.new-comment-form button {
+  padding: 0.6rem 1.2rem;
+  background: #4f8cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.new-comment-form button:hover {
+  background: #3a7be0;
+}
+
+.new-comment-form .delete-btn {
+  background: #3d4150;
+  color: #e74c3c;
+}
+
+.new-comment-form .delete-btn:hover {
+  background: #4a4f60;
+}
+
+.login-prompt {
+  color: #888;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.comments-list {
+  margin-top: 1rem;
+}
+
+.comment-item {
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  background: #2d313a;
+  border-radius: 8px;
+  border-left: 3px solid #4f8cff;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.comment-user {
+  font-weight: 600;
+  color: #4f8cff;
+}
+
+.comment-date {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.comment-menu-wrapper {
+  position: relative;
+  margin-left: auto;
+}
+
+.comment-menu-btn {
+  background: none !important;
+  border: none !important;
+  color: #888 !important;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem !important;
+  margin-top: 0 !important;
+  width: auto !important;
+}
+
+.comment-menu-btn:hover {
+  background: none !important;
+  color: #fff !important;
+}
+
+.comment-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #1e222b;
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 10;
+  min-width: 120px;
+}
+
+.comment-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  color: #f5f6fa;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.comment-menu button:hover {
+  background: #3d4150;
+}
+
+.comment-menu button:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.comment-menu button:last-child {
+  border-radius: 0 0 8px 8px;
+  color: #e74c3c;
+}
+
+.edit-comment-form {
+  width: 100%;
+}
+
+.edit-comment-form .grade-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.edit-comment-form .grade-input label {
+  color: #aaa;
+}
+
+.edit-comment-form textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #23272f;
+  color: #f5f6fa;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 0.8rem;
+}
+
+.edit-comment-form textarea:focus {
+  outline: none;
+  border-color: #4f8cff;
+}
+
+.edit-comment-form .form-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-comment-form button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.edit-comment-form button[type="submit"] {
+  background: #4f8cff;
+  color: white;
+}
+
+.edit-comment-form button[type="submit"]:hover {
+  background: #3a7be0;
+}
+
+.edit-comment-form .cancel-btn {
+  background: #3d4150;
+  color: #aaa;
+}
+
+.edit-comment-form .cancel-btn:hover {
+  background: #4a4f60;
+}
+
+.comment-text {
+  color: #ddd;
+  line-height: 1.5;
+  margin: 0.5rem 0;
+}
+
+.delete-btn {
+  padding: 0.3rem 0.7rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: #3d4150;
+  color: #e74c3c;
+}
+
+.delete-btn:hover {
+  background: #4a4f60;
+}
+
+.no-comments {
+  color: #777;
+  font-style: italic;
+}
+
+.comments-error {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.comments-loading {
+  color: #888;
+  padding: 1rem;
+}
+
+.reviews-btn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #3d4150;
+  color: #4f8cff;
+  border: 1px solid #4f8cff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reviews-btn:hover {
+  background: #4f8cff;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .comments-section {
+    padding: 0.8rem;
+  }
+  
+  .comment-item {
+    padding: 0.8rem;
+  }
+  
+  .average-rating {
+    flex-wrap: wrap;
+  }
 }

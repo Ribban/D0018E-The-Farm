@@ -40,6 +40,7 @@ def profile():
     user = get_user_by_id(get_jwt_identity()) 
     if user:
         return jsonify({
+            'User_id': user.User_id,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'phone': user.phone,

@@ -67,6 +67,7 @@ class ShoppingCart(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     items = db.relationship('ShoppingCartItem', backref='cart', lazy=True, cascade="all, delete-orphan")
 
+
 class ShoppingCartItem(db.Model):
     __tablename__ = 'shopping_cart_items'
     
@@ -74,3 +75,15 @@ class ShoppingCartItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'), primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     product = db.relationship('Product')
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    comment_id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.User_id'), nullable=False)
+    grade = db.Column(db.Integer, nullable=True)  # 1-5
+    text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    product = db.relationship('Product', backref='comments')
+    user = db.relationship('User')

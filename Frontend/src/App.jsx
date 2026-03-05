@@ -8,6 +8,7 @@ import Cart from "./Pages/cart";
 import axios from "axios";
 import Checkout from "./Pages/checkout";
 import AdminProducts from "./Pages/admin";
+import Comments from "./Pages/Comments";
 
 function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, onAdminClick, token, isAdmin }) {
   return (
@@ -45,11 +46,12 @@ function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileCli
   );
 }
 
-function ProductList({ onAddToCart }) {
+function ProductList({ onAddToCart, token }) {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [sortKey, setSortKey] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const sortOptions = [
     { value: "price", label: "Pris" },
@@ -140,35 +142,46 @@ function ProductList({ onAddToCart }) {
           <div key={product.id} className="product-card">
             <h3>{product.name}</h3>
 
-            {product.category_id === 2 ? (
-              <>
-                <p>Volym: {product.weight} L</p>
-                <p>
-                  Jämförpris:{" "}
-                  {(product.list_price / product.weight).toFixed(2)} kr/L
-                </p>
-              </>
-            ) : (
-              <>
-                <p>Vikt: {product.weight} kg</p>
-                <p>
-                  Jämförpris:{" "}
-                  {(product.list_price / product.weight).toFixed(2)} kr/kg
-                </p>
+            <div className="product-info">
+              {product.category_id === 2 ? (
+                <>
+                  <p>Volym: {product.weight} L</p>
+                  <p>
+                    Jämförpris:{" "}
+                    {(product.list_price / product.weight).toFixed(2)} kr/L
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>Vikt: {product.weight} kg</p>
+                  <p>
+                    Jämförpris:{" "}
+                    {(product.list_price / product.weight).toFixed(2)} kr/kg
+                  </p>
 
-                {product.category_id === 1 && (
-                  <p>Djurets Ålder: {product.animal_age} år</p>
-                )}
-              </>
-            )}
+                  {product.category_id === 1 && (
+                    <p>Djurets Ålder: {product.animal_age} år</p>
+                  )}
+                </>
+              )}
 
-            <p>Packdatum: {product.packaging_date}</p>
+              <p>Packdatum: {product.packaging_date}</p>
+            </div>
 
             <span>{product.list_price} kr</span>
 
             <button onClick={() => onAddToCart(product)}>
               Lägg till i kundvagn
             </button>
+            <button 
+              className="reviews-btn"
+              onClick={() => setSelectedProduct(selectedProduct?.id === product.id ? null : product)}
+            >
+              {selectedProduct?.id === product.id ? "Dölj recensioner" : "Visa recensioner"}
+            </button>
+            {selectedProduct?.id === product.id && (
+              <Comments productId={product.id} token={token} />
+            )}
           </div>
         ))}
       </div>
@@ -301,7 +314,8 @@ function App() {
         <main>
           {page === "products" && (
             <ProductList
-             onAddToCart={handleAddToCart} 
+             onAddToCart={handleAddToCart}
+             token={token}
              />
           )}
 

@@ -6,6 +6,7 @@ from api.products import products_bp
 from dotenv import load_dotenv
 from api.auth import auth_bp
 from api.cart import cart_bp
+from api.comments import comments_bp
 from datetime import timedelta
 from api.orderMail import mail
 import os
@@ -52,6 +53,7 @@ db.init_app(app)
 app.register_blueprint(products_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(cart_bp, url_prefix='/api')
+app.register_blueprint(comments_bp, url_prefix='/api')
 
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, expose_headers=["Authorization"], allow_headers="*")
 
