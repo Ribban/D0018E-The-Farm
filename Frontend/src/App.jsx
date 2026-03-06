@@ -9,14 +9,19 @@ import axios from "axios";
 import Checkout from "./Pages/checkout";
 import AdminProducts from "./Pages/admin";
 import Comments from "./Pages/Comments";
+import About from "./Pages/about";
+import lägd from "./assets/lägd.jpg";
 
-function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, onAdminClick, token, isAdmin }) {
+function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, onAdminClick, onAboutClick, token, isAdmin }) {
   return (
     <header className="header">
       <div className="logo" onClick={onHomeClick} style={{ cursor: "pointer" }}>
         Lönåsgården
       </div>
       <nav className="nav">
+        <button className="menu-btn" onClick={onAboutClick}>
+          Om oss
+        </button>
         <button className="menu-btn" onClick={onHomeClick}>
           Meny
         </button>
@@ -45,6 +50,21 @@ function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileCli
     </header>
   );
 }
+function Background_img({}){
+  return (
+    <section className="hero-section">
+      <img src={lägd} alt="Lönåsgården bakgrund" className="hero-image" />
+      <div className="hero-overlay">
+        <div className="hero-content">
+          <h1>Välkommen till Lönåsgården</h1>
+          <p>Närproducerad mat med ursprung i Västerbotten</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+  
+
 
 function ProductList({ onAddToCart, token }) {
   const [search, setSearch] = useState("");
@@ -300,6 +320,7 @@ function App() {
 
   return (
     <div className="App">
+      
       <div className="page-container">
         <Header
           onCartClick={() => setPage("cart")}
@@ -307,10 +328,14 @@ function App() {
           onProfileClick={() => setPage("profile")}
           onLoginClick={() => setPage("login")} 
           onAdminClick={() => setPage("admin")}
+          onAboutClick={() => setPage("about")}
           logMeOut={Logout}
           token={token}
           isAdmin={isAdmin}
         />
+
+        
+        {page === "products" && <Background_img />}
         <main>
           {page === "products" && (
             <ProductList
@@ -364,6 +389,12 @@ function App() {
 
           {page === "profile" && (
             <Profile token={token} setToken={setToken} />
+          )}
+          {page === "about" && (
+            <About
+             
+              token={token}
+            />
           )}
         </main>
       </div>

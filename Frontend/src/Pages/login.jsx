@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import axios from "axios";
+import "../App.css";
 
 function Login(props) {
 
@@ -43,33 +44,41 @@ function Login(props) {
           ...prevNote, [name]: value})
       )}
 
-    return (
-      <div>
-        <h1>Login</h1>
-        <form className="login">
-          <input onChange={handleChange}
-            type="email"
-            text={loginForm.email}
-            name="email"
-            placeholder="Email"
-            value={loginForm.email} />
-          <input onChange={handleChange}
-            type="password"
-            text={loginForm.password}
-            name="password"
-            placeholder="Password"
-            value={loginForm.password} />
+  return (
+    <div className="login_container">
+      <h2>Login</h2>
+      
+      <form className="login" onSubmit={logMeIn}>
+        <input 
+          onChange={handleChange}
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={loginForm.email} 
+        />
+        <input 
+          onChange={handleChange}
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={loginForm.password} 
+        />
+        <button type="submit">Submit</button>
+      </form>
 
-          <button onClick={logMeIn}>Submit</button>
-        </form>
-        <div style={{ marginTop: '1em' }}>
-          <span>Har du inget konto? </span>
-          <button type="button" onClick={() => props.onRegisterClick && props.onRegisterClick()}>
-            Registrera dig här
-          </button>
-        </div>
+      <div className="register-link">
+        <span>Har du inget konto? </span>
+        <button 
+          type="button" 
+          className="text-btn" 
+          onClick={() => props.onRegisterClick && props.onRegisterClick()}
+        >
+          Registrera dig här
+        </button>
       </div>
-    );
+    </div>
+  );
+  
 }
 
 export default Login;
