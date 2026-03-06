@@ -37,3 +37,6 @@ env/
 .env.*.local
 Frontend/.env
 Backend/.env
+Backend/app/data/__pycache__/models.cpython-313.pyc
+Backend/app/data/__pycache__/queries.cpython-313.pyc
+/Backend/app/data/__pycache__

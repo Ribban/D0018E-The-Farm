@@ -227,9 +227,20 @@ function App() {
       .catch(() => setIsAdmin(false));
   }, [token]);
 
+  // Load cart - from database if logged in, from localStorage if not
   useEffect(() => {
     if (!token || token === "undefined" || token === null) {
-      setCart([]);
+      // Load from localStorage for anonymous users
+      const localCart = localStorage.getItem("guestCart");
+      if (localCart) {
+        try {
+          setCart(JSON.parse(localCart));
+        } catch {
+          setCart([]);
+        }
+      } else {
+        setCart([]);
+      }
       return;
     }
     axios.get((`${import.meta.env.VITE_SERVER_URL}/api/cart`), {
@@ -238,6 +249,40 @@ function App() {
     .then(res => setCart(res.data.items || []))
     .catch(() => setCart([]));
   }, [token]);
+
+  useEffect(() => {
+    if (!token || token === "undefined" || token === null) {
+      localStorage.setItem("guestCart", JSON.stringify(cart));
+    }
+  }, [cart, token]);
+
+  const syncLocalCartToDatabase = async (newToken) => {
+    const localCart = localStorage.getItem("guestCart");
+    if (!localCart) return;
+    
+    try {
+      const items = JSON.parse(localCart);
+      if (items.length === 0) return;
+
+      for (const item of items) {
+        await axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/add`), {
+          product_id: item.product_id || item.id,
+          quantity: item.quantity || 1
+        }, {
+          headers: { Authorization: `Bearer ${newToken}` }
+        });
+      }
+
+      localStorage.removeItem("guestCart");
+
+      const res = await axios.get((`${import.meta.env.VITE_SERVER_URL}/api/cart`), {
+        headers: { Authorization: `Bearer ${newToken}` }
+      });
+      setCart(res.data.items || []);
+    } catch (err) {
+      console.error("Failed to sync cart:", err);
+    }
+  };
 
   const Logout = () => {
     axios({
@@ -252,7 +297,28 @@ function App() {
   };
 
   const handleAddToCart = (product) => {
-    if (!token) return;
+    if (!token || token === "undefined" || token === null) {
+      setCart(prevCart => {
+        const existingItem = prevCart.find(item => (item.product_id || item.id) === product.id);
+        if (existingItem) {
+          return prevCart.map(item =>
+            (item.product_id || item.id) === product.id
+              ? { ...item, quantity: (item.quantity || 1) + 1 }
+              : item
+          );
+        } else {
+          return [...prevCart, {
+            product_id: product.id,
+            id: product.id,
+            name: product.name,
+            list_price: product.list_price,
+            quantity: 1
+          }];
+        }
+      });
+      return;
+    }
+
     axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/add`), {
       product_id: product.id,
       quantity: 1
@@ -263,10 +329,23 @@ function App() {
   };
 
   const handleDecreaseQuantity = (id) => {
-    if (!token) return;
     const item = cart.find((item) => item.product_id === id || item.id === id);
     if (!item) return;
     const newQty = (item.quantity || 1) - 1;
+
+    if (!token || token === "undefined" || token === null) {
+      if (newQty <= 0) {
+        setCart(prevCart => prevCart.filter(item => (item.product_id || item.id) !== id));
+      } else {
+        setCart(prevCart => prevCart.map(item =>
+          (item.product_id || item.id) === id
+            ? { ...item, quantity: newQty }
+            : item
+        ));
+      }
+      return;
+    }
+
     if (newQty <= 0) {
       axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/remove`), {
         product_id: id
@@ -286,9 +365,18 @@ function App() {
   };
 
   const handleIncreaseQuantity = (id) => {
-    if (!token) return;
     const item = cart.find((item) => item.product_id === id || item.id === id);
     const newQty = (item?.quantity || 0) + 1;
+
+    if (!token || token === "undefined" || token === null) {
+      setCart(prevCart => prevCart.map(item =>
+        (item.product_id || item.id) === id
+          ? { ...item, quantity: newQty }
+          : item
+      ));
+      return;
+    }
+
     axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/update`), {
       product_id: id,
       quantity: newQty
@@ -375,8 +463,9 @@ function App() {
 
           {page === "login" && (
             <Login 
-              setToken={(newToken) => {
+              setToken={async (newToken) => {
                 setToken(newToken);
+                await syncLocalCartToDatabase(newToken);
                 setPage("products"); 
               }}
               onRegisterClick={() => setPage("register")}
