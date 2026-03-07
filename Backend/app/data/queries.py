@@ -67,7 +67,8 @@ def create_product(data):
         Packaging_date=data.get('packaging_date'),
         list_price=data.get('list_price'),
         Animal_Age=data.get('animal_age'),
-        category_id=data.get('category_id')
+        category_id=data.get('category_id'),
+        image_url=data.get('image_url')
     )
     db.session.add(product)
     db.session.commit()
@@ -83,6 +84,8 @@ def update_product(product_id, data):
     product.list_price = data.get('list_price', product.list_price)
     product.Animal_Age = data.get('animal_age') if data.get('animal_age') not in ("", None) else None
     product.category_id = data.get('category_id', product.category_id)
+    product.image_url = data.get('image_url', product.image_url)
+
     db.session.commit()
     return product
 

@@ -66,7 +66,7 @@ function Background_img({}){
   
 
 
-function ProductList({ onAddToCart, token }) {
+function ProductList({ onAddToCart, token, onProductClick }) {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [sortKey, setSortKey] = useState("");
@@ -160,7 +160,26 @@ function ProductList({ onAddToCart, token }) {
       <div className="products">
         {sortedProducts.map((product) => (
           <div key={product.id} className="product-card">
-            <h3>{product.name}</h3>
+            
+            {product.image_url ? (
+               <img 
+                 src={product.image_url} 
+                 alt={product.name} 
+                 className="product-list-image"
+                 onClick={() => onProductClick(product)}
+               />
+            ) : (
+               <div className="product-list-image-placeholder" onClick={() => onProductClick(product)}>
+                 <span>Bild saknas</span>
+               </div>
+            )}
+
+            <h3
+              onClick={() => onProductClick(product)}
+              style={{ cursor: "pointer", color: "#557a46" }}
+            >
+              {product.name}
+            </h3>
 
             <div className="product-info">
               {product.category_id === 2 ? (
@@ -193,19 +212,69 @@ function ProductList({ onAddToCart, token }) {
             <button onClick={() => onAddToCart(product)}>
               Lägg till i kundvagn
             </button>
-            <button 
-              className="reviews-btn"
-              onClick={() => setSelectedProduct(selectedProduct?.id === product.id ? null : product)}
-            >
-              {selectedProduct?.id === product.id ? "Dölj recensioner" : "Visa recensioner"}
-            </button>
-            {selectedProduct?.id === product.id && (
-              <Comments productId={product.id} token={token} />
-            )}
           </div>
         ))}
       </div>
     </section>
+  );
+}
+function ProductDetail({ product, onAddToCart, onBack, token }) {
+  if (!product) return null;
+
+  return (
+    <div className="product-detail-page">
+      <button className="back-btn" onClick={onBack}>
+        &larr; Tillbaka till menyn
+      </button>
+
+      <div className="product-detail-container">
+        <div className="product-image-section">
+          {product.image_url ? (
+            <img 
+              src={product.image_url} 
+              alt={product.name} 
+              className="product-detail-image" 
+            />
+          ) : (
+            <div className="placeholder-image">
+              <span>Bild saknas</span>
+            </div>
+          )}
+        </div>
+
+        <div className="product-info-section">
+          <h2>{product.name}</h2>
+          <span className="detail-price">{product.list_price} kr</span>
+
+          <div className="detail-specs">
+            {product.category_id === 2 ? (
+              <>
+                <p><strong>Volym:</strong> {product.weight} L</p>
+                <p><strong>Jämförpris:</strong> {(product.list_price / product.weight).toFixed(2)} kr/L</p>
+              </>
+            ) : (
+              <>
+                <p><strong>Vikt:</strong> {product.weight} kg</p>
+                <p><strong>Jämförpris:</strong> {(product.list_price / product.weight).toFixed(2)} kr/kg</p>
+                {product.category_id === 1 && (
+                  <p><strong>Djurets Ålder:</strong> {product.animal_age} år</p>
+                )}
+              </>
+            )}
+            <p><strong>Packdatum:</strong> {product.packaging_date}</p>
+          </div>
+
+          <button className="add-to-cart-btn" onClick={() => onAddToCart(product)}>
+            Lägg till i kundvagn
+          </button>
+        </div>
+      </div>
+
+      <div className="product-reviews-section">
+        <h3>Recensioner för {product.name}</h3>
+        <Comments productId={product.id} token={token} />
+      </div>
+    </div>
   );
 }
 
@@ -216,6 +285,7 @@ function App() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [checkoutSuccess, setCheckoutSuccess] = useState("");
+  const [currentProduct, setCurrentProduct] = useState(null);
 
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
@@ -429,7 +499,20 @@ function App() {
             <ProductList
              onAddToCart={handleAddToCart}
              token={token}
+             onProductClick={(product) => {
+               setCurrentProduct(product);
+               setPage("productDetail");
+             }}
              />
+          )}
+
+        {page === "productDetail" && (
+            <ProductDetail 
+              product={currentProduct}
+              onAddToCart={handleAddToCart}
+              onBack={() => setPage("products")}
+              token={token}
+            />
           )}
 
           {page === "cart" && (

@@ -28,7 +28,15 @@ function AdminProducts({ token }) {
       : axios.post((`${import.meta.env.VITE_SERVER_URL}/api/products`), form, { headers: { Authorization: `Bearer ${token}` } });
     req.then(() => {
       setSuccess(editId ? "Uppdaterad!" : "Skapad!");
-      setForm({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "" });
+      setForm({ 
+        name: "",
+        weight: "",
+        packaging_date: "",
+        list_price: "",
+        animal_age: "",
+        category_id: "",
+        image_url: ""
+      });
       setEditId(null);
       fetchProducts();
     }).catch(err => setError(err.response?.data?.msg || "Fel vid sparande"));
@@ -42,7 +50,8 @@ function AdminProducts({ token }) {
       packaging_date: p.packaging_date,
       list_price: p.list_price,
       animal_age: p.animal_age,
-      category_id: p.category_id
+      category_id: p.category_id,
+      image_url: p.image_url || ""
     });
   };
 
@@ -63,12 +72,13 @@ function AdminProducts({ token }) {
         <input name="list_price" placeholder="Pris" value={form.list_price} onChange={handleChange} required />
         <input name="animal_age" placeholder="Ålder (valfritt)" value={form.animal_age} onChange={handleChange} />
         <input name="category_id" placeholder="Kategori-ID" value={form.category_id} onChange={handleChange} required />
+        <input name="image_url" placeholder="Bild-URL eller (t.ex. /images/biff.jpg)" value={form.image_url} onChange={handleChange} />
         <button type="submit">{editId ? "Uppdatera" : "Skapa"}</button>
-        {editId && <button type="button" onClick={() => { setEditId(null); setForm({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "" }); }}>Avbryt</button>}
+        {editId && <button type="button" onClick={() => { setEditId(null); setForm({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "", image_url: "" }); }}>Avbryt</button>}
       </form>
-      {error && <p style={{color:'red'}}>{error}</p>}
-      {success && <p style={{color:'green'}}>{success}</p>}
-      <table style={{marginTop:20}}>
+      {error && <p className="status-msg error">{error}</p>}
+      {success && <p className="status-msg success">{success}</p>}  
+      <table>
         <thead>
           <tr><th>Namn</th><th>Vikt/Volym</th><th>Pris</th><th>Packdatum</th><th>Ålder</th><th>Kategori</th><th></th></tr>
         </thead>
@@ -83,7 +93,7 @@ function AdminProducts({ token }) {
               <td>{p.category_id}</td>
               <td>
                 <button onClick={() => handleEdit(p)}>Redigera</button>
-                <button onClick={() => handleDelete(p.id)} style={{color:'red'}}>Ta bort</button>
+                <button onClick={() => handleDelete(p.id)}>Ta bort</button>
               </td>
             </tr>
           ))}

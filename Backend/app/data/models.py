@@ -31,6 +31,7 @@ class Product(db.Model):
     Packaging_date = db.Column(db.DATE)
     list_price = db.Column(db.Numeric(10, 2))
     Animal_Age = db.Column(db.SmallInteger)
+    image_url = db.Column(db.String)
     
     # Foreign Key [cite: 8]
     category_id = db.Column(db.Integer, db.ForeignKey('categories.category_id'))

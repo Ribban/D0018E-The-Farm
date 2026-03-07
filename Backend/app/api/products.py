@@ -17,7 +17,8 @@ def get_products():
             "packaging_date": str(p.Packaging_date),
             "list_price": float(p.list_price) if p.list_price else None,
             "animal_age": p.Animal_Age,
-            "category_id": p.category_id
+            "category_id": p.category_id,
+            "image_url": p.image_url
         })
     return jsonify(result)
 
