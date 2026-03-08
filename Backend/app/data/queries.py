@@ -99,7 +99,8 @@ def create_product(data):
         Packaging_date=data.get('packaging_date'),
         list_price=data.get('list_price'),
         Animal_Age=animal_age if animal_age not in ("", None) else None,
-        category_id=data.get('category_id')
+        category_id=data.get('category_id'),
+        stock = data.get('stock', product.stock)
     )
     db.session.add(product)
     db.session.commit()
@@ -116,6 +117,7 @@ def update_product(product_id, data):
     product.Animal_Age = data.get('animal_age') if data.get('animal_age') not in ("", None) else None
     product.category_id = data.get('category_id', product.category_id)
     product.image_url = data.get('image_url', product.image_url)
+    product.stock = data.get('stock', product.stock)
 
     db.session.commit()
     return product
@@ -175,6 +177,10 @@ def create_order_from_cart(user_id, pickup_date, payment_method):
     db.session.flush()
 
     for item in cart.items:
+        if item.product.stock < item.quantity:
+            db.session.rollback()
+            return None
+        item.product.stock -= item.quantity
         order_item = OrderItem(
             order_id=order.order_id,
             item_id=None,

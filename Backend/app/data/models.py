@@ -32,6 +32,7 @@ class Product(db.Model):
     list_price = db.Column(db.Numeric(10, 2))
     Animal_Age = db.Column(db.SmallInteger)
     image_url = db.Column(db.String)
+    stock = db.Column(db.Integer, default=0)
     
     # Foreign Key [cite: 8]
     category_id = db.Column(db.Integer, db.ForeignKey('categories.category_id'))

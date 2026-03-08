@@ -15,7 +15,9 @@ def get_cart():
         "product_id": item.product_id,
         "name": item.product.product_name,
         "list_price": float(item.product.list_price) if item.product.list_price else 0,
-        "quantity": item.quantity
+        "quantity": item.quantity,
+        "packaging_date": str(item.product.Packaging_date) if item.product.Packaging_date else None,
+        "animal_age": item.product.Animal_Age
     } for item in cart.items]
         
     return jsonify({"cart_id": cart.cart_id, "items": items_data})

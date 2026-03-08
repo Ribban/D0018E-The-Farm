@@ -309,7 +309,8 @@ function AdminProducts({ token }) {
         list_price: "",
         animal_age: "",
         category_id: "",
-        image_url: ""
+        image_url: "",
+        stock: ""
       });
       setEditId(null);
       fetchProducts();
@@ -325,7 +326,8 @@ function AdminProducts({ token }) {
       list_price: p.list_price,
       animal_age: p.animal_age,
       category_id: p.category_id,
-      image_url: p.image_url || ""
+      image_url: p.image_url || "",
+      stock: p.stock
     });
   };
 
@@ -345,6 +347,7 @@ function AdminProducts({ token }) {
         <input name="packaging_date" placeholder="Packdatum (YYYY-MM-DD)" value={form.packaging_date} onChange={handleChange} required />
         <input name="list_price" placeholder="Pris" value={form.list_price} onChange={handleChange} required />
         <input name="animal_age" placeholder="Ålder (valfritt)" value={form.animal_age} onChange={handleChange} />
+        <input name="stock" placeholder="Antal i lager" value={form.stock} onChange={handleChange} />
         <input name="category_id" placeholder="Kategori-ID" value={form.category_id} onChange={handleChange} required />
         <input name="image_url" placeholder="Bild-URL eller (t.ex. /images/biff.jpg)" value={form.image_url} onChange={handleChange} />
         <button type="submit">{editId ? "Uppdatera" : "Skapa"}</button>
@@ -354,7 +357,7 @@ function AdminProducts({ token }) {
       {success && <p className="status-msg success">{success}</p>}  
       <table>
         <thead>
-          <tr><th>Namn</th><th>Vikt/Volym</th><th>Pris</th><th>Packdatum</th><th>Ålder</th><th>Kategori</th><th></th></tr>
+          <tr><th>Namn</th><th>Vikt/Volym</th><th>Pris</th><th>Packdatum</th><th>Ålder</th><th>Kategori</th><th>Antal i lager</th></tr>
         </thead>
         <tbody>
           {products.map(p => (
@@ -365,6 +368,7 @@ function AdminProducts({ token }) {
               <td>{p.packaging_date}</td>
               <td>{p.animal_age}</td>
               <td>{p.category_id}</td>
+              <td>{p.stock}</td>
               <td>
                 <button onClick={() => handleEdit(p)}>Redigera</button>
                 <button onClick={() => handleDelete(p.id)}>Ta bort</button>
