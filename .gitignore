@@ -40,3 +40,4 @@ Backend/.env
 Backend/app/data/__pycache__/models.cpython-313.pyc
 Backend/app/data/__pycache__/queries.cpython-313.pyc
 /Backend/app/data/__pycache__
+/Backend/app/data/__pycache__

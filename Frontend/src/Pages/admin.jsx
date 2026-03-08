@@ -1,6 +1,280 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const ORDER_STATUS = {
+  1: "Mottagen",
+  2: "Under behandling",
+  3: "Redo för upphämtning",
+  4: "Levererad",
+  5: "Avbruten"
+};
+
+const STATUS_SECTIONS = [
+  { status: 1, title: "Nya ordrar", description: "Behöver behandlas" },
+  { status: 2, title: "Under behandling", description: "Pågående" },
+  { status: 3, title: "Redo för upphämtning", description: "Väntar på kund" },
+  { status: 4, title: "Levererade", description: "Avslutade" },
+  { status: 5, title: "Avbrutna", description: "Annullerade ordrar" }
+];
+
+function OrderTable({ orders, onStatusChange, onDelete, onViewDetails }) {
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDirection, setSortDirection] = useState('asc');
+
+  if (orders.length === 0) {
+    return <p className="no-orders">Inga ordrar</p>;
+  }
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (!sortKey) return 0;
+    
+    let aVal = a[sortKey];
+    let bVal = b[sortKey];
+
+    if (aVal == null) aVal = '';
+    if (bVal == null) bVal = '';
+
+    if (sortKey === 'order_id' || sortKey === 'total' || sortKey === 'order_status') {
+      aVal = Number(aVal) || 0;
+      bVal = Number(bVal) || 0;
+    }
+    
+    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const SortHeader = ({ label, sortKeyName }) => (
+    <th onClick={() => handleSort(sortKeyName)} className="sortable-header">
+      {label}
+      {sortKey === sortKeyName && (
+        <span className="sort-indicator">{sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
+      )}
+    </th>
+  );
+  
+  return (
+    <table>
+      <thead>
+        <tr>
+          <SortHeader label="Order-ID" sortKeyName="order_id" />
+          <SortHeader label="Kund" sortKeyName="customer_name" />
+          <SortHeader label="Datum" sortKeyName="order_date" />
+          <SortHeader label="Hämtdatum" sortKeyName="pickup_date" />
+          <SortHeader label="Status" sortKeyName="order_status" />
+          <SortHeader label="Summa" sortKeyName="total" />
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedOrders.map(order => (
+          <tr key={order.order_id}>
+            <td>{order.order_id}</td>
+            <td>{order.customer_name}</td>
+            <td>{order.order_date}</td>
+            <td>{order.pickup_date || "-"}</td>
+            <td>
+              <select 
+                value={order.order_status} 
+                onChange={(e) => onStatusChange(order.order_id, e.target.value)}
+                className="status-select"
+              >
+                {Object.entries(ORDER_STATUS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </td>
+            <td>{order.total?.toFixed(2)} kr</td>
+            <td>
+              <button onClick={() => onViewDetails(order)}>Visa</button>
+              <button onClick={() => onDelete(order.order_id)}>Ta bort</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function AdminOrders({ token }) {
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [collapsedSections, setCollapsedSections] = useState({ 4: true, 5: true });
+
+  const fetchOrders = () => {
+    axios.get(`${import.meta.env.VITE_SERVER_URL}/api/orders`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => setOrders(res.data))
+      .catch(() => setOrders([]));
+  };
+
+  useEffect(() => { fetchOrders(); }, []);
+
+  const getOrdersByStatus = (status) => {
+    return orders.filter(order => order.order_status === status);
+  };
+
+  const toggleSection = (status) => {
+    setCollapsedSections(prev => ({ ...prev, [status]: !prev[status] }));
+  };
+
+  const handleStatusChange = (orderId, newStatus) => {
+    setError(""); setSuccess("");
+    axios.put(`${import.meta.env.VITE_SERVER_URL}/api/orders/${orderId}/status`, 
+      { order_status: parseInt(newStatus) },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+      .then(() => {
+        setSuccess("Orderstatus uppdaterad!");
+        fetchOrders();
+        if (selectedOrder && selectedOrder.order_id === orderId) {
+          setSelectedOrder(prev => ({ ...prev, order_status: parseInt(newStatus) }));
+        }
+      })
+      .catch(err => setError(err.response?.data?.msg || "Fel vid uppdatering"));
+  };
+
+  const handleDelete = (orderId) => {
+    if (!window.confirm("Är du säker på att du vill ta bort denna order?")) return;
+    setError(""); setSuccess("");
+    axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/orders/${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => {
+        setSuccess("Order borttagen!");
+        fetchOrders();
+        if (selectedOrder && selectedOrder.order_id === orderId) {
+          setSelectedOrder(null);
+        }
+      })
+      .catch(err => setError(err.response?.data?.msg || "Fel vid borttagning"));
+  };
+
+  const viewOrderDetails = (order) => {
+    setSelectedOrder(order);
+  };
+
+  return (
+    <section className="admin-orders">
+      <h2>Admin: Hantera ordrar</h2>
+      {error && <p className="status-msg error">{error}</p>}
+      {success && <p className="status-msg success">{success}</p>}
+      
+      <p className="order-count">Totalt {orders.length} ordrar</p>
+      
+      {STATUS_SECTIONS.map(({ status, title, description }) => {
+        const sectionOrders = getOrdersByStatus(status);
+        const isCollapsed = collapsedSections[status];
+        
+        return (
+          <div key={status} className={`order-section status-section-${status}`}>
+            <div className="order-section-header" onClick={() => toggleSection(status)}>
+              <div className="order-section-title">
+                <span className={`section-indicator status-${status}`}></span>
+                <h3>{title}</h3>
+                <span className="order-section-count">{sectionOrders.length}</span>
+              </div>
+              <span className="order-section-description">{description}</span>
+              <span className={`collapse-icon ${isCollapsed ? 'collapsed' : ''}`}>▼</span>
+            </div>
+            
+            {!isCollapsed && (
+              <div className="order-section-content">
+                <OrderTable 
+                  orders={sectionOrders}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDelete}
+                  onViewDetails={viewOrderDetails}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {selectedOrder && (
+        <div className="order-modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="order-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h3>Order #{selectedOrder.order_id}</h3>
+              <button className="close-btn" onClick={() => setSelectedOrder(null)}>×</button>
+            </div>
+            
+            <div className="order-modal-content">
+              <div className="order-info-grid">
+                <div className="order-info-item">
+                  <label>Kund</label>
+                  <span>{selectedOrder.customer_name}</span>
+                </div>
+                <div className="order-info-item">
+                  <label>E-post</label>
+                  <span>{selectedOrder.customer_email}</span>
+                </div>
+                <div className="order-info-item">
+                  <label>Telefon</label>
+                  <span>{selectedOrder.customer_phone || "-"}</span>
+                </div>
+                <div className="order-info-item">
+                  <label>Orderdatum</label>
+                  <span>{selectedOrder.order_date}</span>
+                </div>
+                <div className="order-info-item">
+                  <label>Hämtdatum</label>
+                  <span>{selectedOrder.pickup_date || "-"}</span>
+                </div>
+                <div className="order-info-item">
+                  <label>Status</label>
+                  <span className={`status-badge status-${selectedOrder.order_status}`}>
+                    {ORDER_STATUS[selectedOrder.order_status]}
+                  </span>
+                </div>
+              </div>
+              
+              <h4>Produkter</h4>
+              <table className="order-items-table">
+                <thead>
+                  <tr>
+                    <th>Produkt</th>
+                    <th>Antal</th>
+                    <th>Pris/st</th>
+                    <th>Summa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedOrder.items?.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.product_name}</td>
+                      <td>{item.quantity}</td>
+                      <td>{item.list_price?.toFixed(2)} kr</td>
+                      <td>{item.item_total?.toFixed(2)} kr</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              <div className="order-total">
+                <strong>Totalt:</strong> {selectedOrder.total?.toFixed(2)} kr
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function AdminProducts({ token }) {
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "" });
@@ -103,4 +377,31 @@ function AdminProducts({ token }) {
   );
 }
 
-export default AdminProducts;
+function Admin({ token }) {
+  const [activeTab, setActiveTab] = useState("products");
+
+  return (
+    <div className="admin-panel">
+      <h1>Adminpanel</h1>
+      <div className="admin-tabs">
+        <button 
+          onClick={() => setActiveTab("products")}
+          className={activeTab === "products" ? "active" : ""}
+        >
+          Produkter
+        </button>
+        <button 
+          onClick={() => setActiveTab("orders")}
+          className={activeTab === "orders" ? "active" : ""}
+        >
+          Ordrar
+        </button>
+      </div>
+      
+      {activeTab === "products" && <AdminProducts token={token} />}
+      {activeTab === "orders" && <AdminOrders token={token} />}
+    </div>
+  );
+}
+
+export default Admin;

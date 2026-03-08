@@ -61,14 +61,14 @@ def delete_comment(comment_id, user_id):
 
 # CRUD för produkter
 def create_product(data):
+    animal_age = data.get('animal_age')
     product = Product(
         product_name=data.get('name'),
         weight=data.get('weight'),
         Packaging_date=data.get('packaging_date'),
         list_price=data.get('list_price'),
-        Animal_Age=data.get('animal_age'),
-        category_id=data.get('category_id'),
-        image_url=data.get('image_url')
+        Animal_Age=animal_age if animal_age not in ("", None) else None,
+        category_id=data.get('category_id')
     )
     db.session.add(product)
     db.session.commit()
@@ -157,3 +157,44 @@ def create_order_from_cart(user_id, pickup_date, payment_method):
         db.session.delete(item)
     db.session.commit()
     return order
+
+# ORDER MANAGEMENT (Admin)
+def get_all_orders():
+    return Order.query.order_by(Order.order_date.desc()).all()
+
+def get_order_by_id(order_id):
+    return Order.query.get(order_id)
+
+def get_orders_by_user(user_id):
+    return Order.query.filter_by(User_id=user_id).order_by(Order.order_date.desc()).all()
+
+def update_order_status(order_id, new_status):
+    order = Order.query.get(order_id)
+    if not order:
+        return None
+    order.order_status = new_status
+    db.session.commit()
+    return order
+
+def update_order(order_id, data):
+    order = Order.query.get(order_id)
+    if not order:
+        return None
+    if 'order_status' in data:
+        order.order_status = data['order_status']
+    if 'required_date' in data:
+        order.required_date = data['required_date']
+    if 'pickup_date' in data:
+        order.Pickup_date = data['pickup_date']
+    db.session.commit()
+    return order
+
+def delete_order(order_id):
+    order = Order.query.get(order_id)
+    if not order:
+        return False
+    # Delete order items first
+    OrderItem.query.filter_by(order_id=order_id).delete()
+    db.session.delete(order)
+    db.session.commit()
+    return True
