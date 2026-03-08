@@ -283,7 +283,11 @@ function ProductDetail({ product, onAddToCart, onBack, token }) {
 
       <div className="product-reviews-section">
         <h3>Recensioner för {product.name}</h3>
-        <Comments productId={product.id} token={token} />
+        <Comments 
+          productName={product.name} 
+          productId={product.id} 
+          token={token} 
+        />
       </div>
     </div>
   );

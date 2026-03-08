@@ -56,15 +56,24 @@ def delete_user(user_id):
     db.session.commit()
     return True
 
-def get_comments_for_product(product_id):
-    return Comment.query.filter_by(product_id=product_id).order_by(Comment.created_at.desc()).all()
+def get_comments_by_product_name(product_name):
+    products = Product.query.filter(Product.product_name.ilike(product_name)).all()
+    
+    if not products:
+        return []
+        
+    product_ids = [p.product_id for p in products]
+    return Comment.query.filter(Comment.product_id.in_(product_ids)).order_by(Comment.created_at.desc()).all()
 
-def get_user_comment_for_product(product_id, user_id):
-    return Comment.query.filter_by(product_id=product_id, user_id=int(user_id)).first()
+def get_comments_for_product(product_name):
+    return Comment.query.filter_by(product_name=product_name).order_by(Comment.created_at.desc()).all()
 
-def add_comment(product_id, user_id, text, grade=None):
+def get_user_comment_for_product(product_name, user_id):
+    return Comment.query.filter_by(product_name=product_name, user_id=int(user_id)).first()
+
+def add_comment(product_name, user_id, text, grade=None):
     comment = Comment(
-        product_id=product_id,
+        product_name=product_name,
         user_id=int(user_id),
         text=text,
         grade=grade

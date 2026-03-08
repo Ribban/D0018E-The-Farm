@@ -1,8 +1,27 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from data.queries import get_comments_for_product, get_user_comment_for_product, add_comment, update_comment, delete_comment, get_user_by_id
+from data.queries import get_comments_by_product_name
 
 comments_bp = Blueprint('comments_bp', __name__)
+
+@comments_bp.route('/products/name/<string:product_name>/comments', methods=['GET'])
+def get_comments_by_name_route(product_name):
+    comments = get_comments_by_product_name(product_name)
+    
+    result = []
+    for c in comments:
+        result.append({
+            "id": c.comment_id,
+            "product_id": c.product_id,
+            "user_id": c.user_id,
+            "user_name": f"{c.user.first_name} {c.user.last_name}" if c.user else "Anonym",
+            "grade": c.grade,
+            "text": c.text,
+            "created_at": c.created_at.isoformat() if c.created_at else None
+        })
+        
+    return jsonify(result)
 
 @comments_bp.route('/products/<int:product_id>/comments', methods=['GET'])
 def get_comments(product_id):

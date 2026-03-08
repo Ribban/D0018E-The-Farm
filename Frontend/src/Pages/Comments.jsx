@@ -22,7 +22,7 @@ function StarRating({ grade, onChange, readOnly = false }) {
   );
 }
 
-function Comments({ productId, token }) {
+function Comments({ productId, productName, token }) {
   const [comments, setComments] = useState([]);
   const [editText, setEditText] = useState("");
   const [editGrade, setEditGrade] = useState(0);
@@ -45,10 +45,10 @@ function Comments({ productId, token }) {
   }, [token]);
 
   useEffect(() => {
-    if (!productId) return;
+    if (!productName) return;
     
     setLoading(true);
-    axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/${productId}/comments`)
+    axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/name/${productName}/comments`)
       .then((res) => {
         setComments(res.data);
         setError("");
@@ -58,7 +58,7 @@ function Comments({ productId, token }) {
         console.error(err);
       })
       .finally(() => setLoading(false));
-  }, [productId]);
+  }, [productName]); 
 
   const myComment = currentUserId 
     ? comments.find(c => Number(c.user_id) === Number(currentUserId))
@@ -98,14 +98,11 @@ function Comments({ productId, token }) {
     
     axios.post(
       `${import.meta.env.VITE_SERVER_URL}/api/products/${productId}/comments`,
-      {
-        text: editText,
-        grade: editGrade > 0 ? editGrade : null
-      },
+      { text: editText, grade: editGrade > 0 ? editGrade : null },
       { headers: { Authorization: `Bearer ${token}` } }
     )
       .then(() => {
-        return axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/${productId}/comments`);
+        return axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/name/${productName}/comments`);
       })
       .then((res) => {
         setComments(res.data);
@@ -121,7 +118,6 @@ function Comments({ productId, token }) {
 
   const handleDelete = () => {
     if (!window.confirm("Vill du verkligen ta bort din recension?")) return;
-    
     if (!myComment) return;
     
     axios.delete(
@@ -129,7 +125,7 @@ function Comments({ productId, token }) {
       { headers: { Authorization: `Bearer ${token}` } }
     )
       .then(() => {
-        return axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/${productId}/comments`);
+        return axios.get(`${import.meta.env.VITE_SERVER_URL}/api/products/name/${productName}/comments`);
       })
       .then((res) => {
         setComments(res.data);
