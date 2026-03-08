@@ -42,6 +42,8 @@ function Cart({ cartItems, onBack, onRemove, onIncrease, onDecrease }) {
                 <div className="cart-item-info">
                   <strong>{item.name}</strong>
                   <span>{item.list_price} kr</span>
+                  {item.animal_age && <span className="cart-meta">Ålder: {item.animal_age} år</span>}
+                  <span className="cart-meta">Packad: {item.packaging_date}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
                   <button className="remove-btn" style={{padding: '0.3em 0.7em', fontSize: '1.2em'}} onClick={() => onDecrease(item.id)}>-</button>

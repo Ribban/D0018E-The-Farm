@@ -66,12 +66,10 @@ function Background_img({}){
   
 
 
-function ProductList({ onAddToCart, token, onProductClick }) {
+function ProductList({ onAddToCart, token, onProductClick, productsToRender }) {
   const [search, setSearch] = useState("");
-  const [products, setProducts] = useState([]);
   const [sortKey, setSortKey] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const sortOptions = [
     { value: "price", label: "Pris" },
@@ -85,14 +83,7 @@ function ProductList({ onAddToCart, token, onProductClick }) {
     return product.list_price / product.weight;
   };
 
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_SERVER_URL}/api/products`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error(err));
-  }, []);
-
-  const filteredProducts = products.filter((product) =>
+  const filteredProducts = productsToRender.filter((product) =>
     product.name?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -145,13 +136,12 @@ function ProductList({ onAddToCart, token, onProductClick }) {
           }}
         >
           <option value="-asc">Ingen</option>
-
           {sortOptions.map((opt) => [
             <option key={opt.value + "-asc"} value={opt.value + "-asc"}>
               {opt.label} (Stigande)
             </option>,
             <option key={opt.value + "-desc"} value={opt.value + "-desc"}>
-              {opt.label} (Sänkande)
+              {opt.label} (Sjunkande)
             </option>,
           ])}
         </select>
@@ -160,7 +150,6 @@ function ProductList({ onAddToCart, token, onProductClick }) {
       <div className="products">
         {sortedProducts.map((product) => (
           <div key={product.id} className="product-card">
-            
             {product.image_url ? (
                <img 
                  src={product.image_url} 
@@ -182,6 +171,7 @@ function ProductList({ onAddToCart, token, onProductClick }) {
             </h3>
 
             <div className="product-info">
+              <p>I lager: {product.totalStock} st</p>
               {product.category_id === 2 ? (
                 <>
                   <p>Volym: {product.weight} L</p>
@@ -197,7 +187,6 @@ function ProductList({ onAddToCart, token, onProductClick }) {
                     Jämförpris:{" "}
                     {(product.list_price / product.weight).toFixed(2)} kr/kg
                   </p>
-
                   {product.category_id === 1 && (
                     <p>Djurets Ålder: {product.animal_age} år</p>
                   )}
@@ -205,12 +194,21 @@ function ProductList({ onAddToCart, token, onProductClick }) {
               )}
 
               <p>Packdatum: {product.packaging_date}</p>
+              {product.nextBatchDate && (
+                <p className="next-batch-text" style={{fontSize: "0.85em", color: "#666", marginTop: "-5px"}}>
+                  Nästa låda: {product.nextBatchDate}
+                </p>
+              )}
             </div>
 
             <span>{product.list_price} kr</span>
 
-            <button onClick={() => onAddToCart(product)}>
-              Lägg till i kundvagn
+            <button 
+              className="add-to-cart-btn"
+              onClick={() => onAddToCart(product)}
+              disabled={product.remainingToBuy <= 0}
+            >
+              {product.remainingToBuy <= 0 ? "Fullbokat i vagnen" : "Lägg i kundvagn"}
             </button>
           </div>
         ))}
@@ -218,6 +216,7 @@ function ProductList({ onAddToCart, token, onProductClick }) {
     </section>
   );
 }
+
 function ProductDetail({ product, onAddToCart, onBack, token }) {
   if (!product) return null;
 
@@ -247,6 +246,7 @@ function ProductDetail({ product, onAddToCart, onBack, token }) {
           <span className="detail-price">{product.list_price} kr</span>
 
           <div className="detail-specs">
+            <p><strong>I lager: </strong>{product.totalStock} st</p>
             {product.category_id === 2 ? (
               <>
                 <p><strong>Volym:</strong> {product.weight} L</p>
@@ -261,11 +261,22 @@ function ProductDetail({ product, onAddToCart, onBack, token }) {
                 )}
               </>
             )}
+    
             <p><strong>Packdatum:</strong> {product.packaging_date}</p>
+              {product.nextBatchDate && (
+                <p className="next-batch-text" style={{fontSize: "0.85em", color: "#666", marginTop: "-5px"}}>
+                  Nästa låda: {product.nextBatchDate}
+                </p>
+              )}
+            
           </div>
 
-          <button className="add-to-cart-btn" onClick={() => onAddToCart(product)}>
-            Lägg till i kundvagn
+          <button 
+            className="add-to-cart-btn"
+            onClick={() => onAddToCart(product)}
+            disabled={product.remainingToBuy <= 0}
+          >
+            {product.remainingToBuy <= 0 ? "Fullbokat i vagnen" : "Lägg i kundvagn"}
           </button>
         </div>
       </div>
@@ -286,8 +297,70 @@ function App() {
   const [checkoutError, setCheckoutError] = useState("");
   const [checkoutSuccess, setCheckoutSuccess] = useState("");
   const [currentProduct, setCurrentProduct] = useState(null);
-
   const [isAdmin, setIsAdmin] = useState(false);
+  const [products, setProducts] = useState([]);
+
+useEffect(() => {
+    fetch(`${import.meta.env.VITE_SERVER_URL}/api/products`)
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const getGroupedProducts = () => {
+    if (!products) return [];
+    const grouped = {};
+
+    products.forEach(product => {
+      const groupKey = product.name.trim().toLowerCase();
+      const cartItem = cart?.find(c => (c.product_id || c.id) === product.id);
+      const inCartQty = cartItem ? cartItem.quantity : 0;
+      
+      const physicalStock = product.stock || 0;
+      const remainingInThisBatch = physicalStock - inCartQty;
+
+      if (!grouped[groupKey]) {
+        grouped[groupKey] = {
+          displayName: product.name,
+          totalPhysicalStock: 0,
+          totalRemainingToBuy: 0,
+          batches: []
+        };
+      }
+      grouped[groupKey].totalPhysicalStock += physicalStock;
+      grouped[groupKey].totalRemainingToBuy += remainingInThisBatch;
+      
+      if (physicalStock > 0) {
+        grouped[groupKey].batches.push({ ...product, remainingInThisBatch });
+      }
+    });
+
+    return Object.values(grouped)
+      .filter(group => group.totalPhysicalStock > 0) 
+      .map(group => {
+        const sortedBatches = group.batches.sort((a, b) => new Date(a.packaging_date) - new Date(b.packaging_date));
+        const availableBatches = sortedBatches.filter(b => b.remainingInThisBatch > 0);
+        
+        const activeBatch = availableBatches.length > 0 ? availableBatches[0] : sortedBatches[0];
+        const nextBatch = availableBatches.length > 1 ? availableBatches[1] : null;
+
+        return {
+          ...activeBatch,
+          name: group.displayName,
+          totalStock: group.totalPhysicalStock,
+          remainingToBuy: group.totalRemainingToBuy,
+          nextBatchDate: nextBatch ? nextBatch.packaging_date : null 
+        };
+      });
+  };
+
+  const productsToRender = getGroupedProducts();
+
+  const liveDetailedProduct = currentProduct 
+    ? productsToRender.find(p => p.name === currentProduct.name) 
+    : null;
+
+
   useEffect(() => {
     if (!token) { setIsAdmin(false); return; }
     axios.get((`${import.meta.env.VITE_SERVER_URL}/api/profile`), {
@@ -435,27 +508,44 @@ function App() {
   };
 
   const handleIncreaseQuantity = (id) => {
-    const item = cart.find((item) => item.product_id === id || item.id === id);
-    const newQty = (item?.quantity || 0) + 1;
+    const itemInCart = cart.find((item) => item.product_id === id || item.id === id);
+    if (!itemInCart) return;
 
-    if (!token || token === "undefined" || token === null) {
-      setCart(prevCart => prevCart.map(item =>
-        (item.product_id || item.id) === id
-          ? { ...item, quantity: newQty }
-          : item
-      ));
-      return;
+    const rawProduct = products.find(p => p.id === id);
+    if (!rawProduct) return;
+
+    const physicalStock = rawProduct.stock || 0;
+
+    if ((itemInCart.quantity || 1) < physicalStock) {
+      const newQty = (itemInCart.quantity || 1) + 1;
+
+      if (!token || token === "undefined" || token === null) {
+        setCart(prevCart => prevCart.map(item =>
+          (item.product_id || item.id) === id
+            ? { ...item, quantity: newQty }
+            : item
+        ));
+        return;
+      }
+
+      axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/update`), {
+        product_id: id,
+        quantity: newQty
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setCart(res.data.items || []));
+
+    } else {
+      const groupedProduct = productsToRender.find(p => p.name === rawProduct.name);
+      
+      if (groupedProduct && groupedProduct.remainingToBuy > 0) {
+        handleAddToCart(groupedProduct);
+      } else {
+        alert(`Det finns tyvärr inga fler ${rawProduct.name} i lager just nu.`);
+      }
     }
-
-    axios.post((`${import.meta.env.VITE_SERVER_URL}/api/cart/update`), {
-      product_id: id,
-      quantity: newQty
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => setCart(res.data.items || []));
   };
-
   const handleCheckout = ({ pickup_date, payment_method }) => {
     setCheckoutLoading(true);
     setCheckoutError("");
@@ -503,12 +593,14 @@ function App() {
                setCurrentProduct(product);
                setPage("productDetail");
              }}
+             productsToRender={productsToRender}
+             cart={cart}
              />
           )}
 
         {page === "productDetail" && (
             <ProductDetail 
-              product={currentProduct}
+              product={liveDetailedProduct}
               onAddToCart={handleAddToCart}
               onBack={() => setPage("products")}
               token={token}

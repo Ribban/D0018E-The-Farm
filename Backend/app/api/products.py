@@ -18,7 +18,8 @@ def get_products():
             "list_price": float(p.list_price) if p.list_price else None,
             "animal_age": p.Animal_Age,
             "category_id": p.category_id,
-            "image_url": p.image_url
+            "image_url": p.image_url,
+            "stock": p.stock
         })
     return jsonify(result)
 
