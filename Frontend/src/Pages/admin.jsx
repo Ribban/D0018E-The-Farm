@@ -277,7 +277,7 @@ function AdminOrders({ token }) {
 
 function AdminProducts({ token }) {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "" });
+  const [form, setForm] = useState({ name: "", weight: "", packaging_date: "", list_price: "", animal_age: "", category_id: "", image_url: "" });
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -377,6 +377,163 @@ function AdminProducts({ token }) {
   );
 }
 
+function AdminUsers({ token }) {
+  const [users, setUsers] = useState([]);
+  const [editUser, setEditUser] = useState(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const fetchUsers = () => {
+    axios.get(`${import.meta.env.VITE_SERVER_URL}/api/users`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => setUsers(res.data))
+      .catch(() => setUsers([]));
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleToggleAdmin = (user) => {
+    setError(""); setSuccess("");
+    axios.put(`${import.meta.env.VITE_SERVER_URL}/api/users/${user.User_id}`, 
+      { Admin: !user.Admin },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+      .then(() => {
+        setSuccess(`${user.first_name} ${user.last_name} är nu ${!user.Admin ? 'admin' : 'vanlig användare'}`);
+        fetchUsers();
+      })
+      .catch(err => setError(err.response?.data?.msg || "Fel vid uppdatering"));
+  };
+
+  const handleDelete = (user) => {
+    if (!window.confirm(`Är du säker på att du vill ta bort ${user.first_name} ${user.last_name}?`)) return;
+    setError(""); setSuccess("");
+    axios.delete(`${import.meta.env.VITE_SERVER_URL}/api/users/${user.User_id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => {
+        setSuccess("Användare borttagen!");
+        fetchUsers();
+      })
+      .catch(err => setError(err.response?.data?.msg || "Fel vid borttagning"));
+  };
+
+  const handleEditSave = () => {
+    if (!editUser) return;
+    setError(""); setSuccess("");
+    axios.put(`${import.meta.env.VITE_SERVER_URL}/api/users/${editUser.User_id}`, editUser, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => {
+        setSuccess("Användare uppdaterad!");
+        setEditUser(null);
+        fetchUsers();
+      })
+      .catch(err => setError(err.response?.data?.msg || "Fel vid uppdatering"));
+  };
+
+  return (
+    <section className="admin-users">
+      <h2>Admin: Hantera användare</h2>
+      {error && <p className="status-msg error">{error}</p>}
+      {success && <p className="status-msg success">{success}</p>}
+      
+      <p className="user-count">Totalt {users.length} användare</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Namn</th>
+            <th>E-post</th>
+            <th>Telefon</th>
+            <th>Admin</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(user => (
+            <tr key={user.User_id}>
+              <td>{user.User_id}</td>
+              <td>{user.first_name} {user.last_name}</td>
+              <td>{user.email}</td>
+              <td>{user.phone || "-"}</td>
+              <td>
+                <span className={`admin-badge ${user.Admin ? 'is-admin' : ''}`}>
+                  {user.Admin ? 'Ja' : 'Nej'}
+                </span>
+              </td>
+              <td>
+                <button onClick={() => setEditUser({...user})}>Redigera</button>
+                <button onClick={() => handleToggleAdmin(user)}>
+                  {user.Admin ? 'Ta bort admin' : 'Gör admin'}
+                </button>
+                <button onClick={() => handleDelete(user)}>Ta bort</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {editUser && (
+        <div className="order-modal-overlay" onClick={() => setEditUser(null)}>
+          <div className="order-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="order-modal-header">
+              <h3>Redigera användare</h3>
+              <button className="close-btn" onClick={() => setEditUser(null)}>×</button>
+            </div>
+            <div className="order-modal-content">
+              <div className="user-edit-form">
+                <label>
+                  Förnamn:
+                  <input 
+                    value={editUser.first_name || ''} 
+                    onChange={e => setEditUser({...editUser, first_name: e.target.value})}
+                  />
+                </label>
+                <label>
+                  Efternamn:
+                  <input 
+                    value={editUser.last_name || ''} 
+                    onChange={e => setEditUser({...editUser, last_name: e.target.value})}
+                  />
+                </label>
+                <label>
+                  E-post:
+                  <input 
+                    value={editUser.email || ''} 
+                    onChange={e => setEditUser({...editUser, email: e.target.value})}
+                  />
+                </label>
+                <label>
+                  Telefon:
+                  <input 
+                    value={editUser.phone || ''} 
+                    onChange={e => setEditUser({...editUser, phone: e.target.value})}
+                  />
+                </label>
+                <label className="admin-checkbox">
+                  <input 
+                    type="checkbox"
+                    checked={editUser.Admin || false}
+                    onChange={e => setEditUser({...editUser, Admin: e.target.checked})}
+                  />
+                  Admin
+                </label>
+                <div className="modal-buttons">
+                  <button onClick={handleEditSave}>Spara</button>
+                  <button onClick={() => setEditUser(null)}>Avbryt</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function Admin({ token }) {
   const [activeTab, setActiveTab] = useState("products");
 
@@ -396,10 +553,17 @@ function Admin({ token }) {
         >
           Ordrar
         </button>
+        <button 
+          onClick={() => setActiveTab("users")}
+          className={activeTab === "users" ? "active" : ""}
+        >
+          Användare
+        </button>
       </div>
       
       {activeTab === "products" && <AdminProducts token={token} />}
       {activeTab === "orders" && <AdminOrders token={token} />}
+      {activeTab === "users" && <AdminUsers token={token} />}
     </div>
   );
 }

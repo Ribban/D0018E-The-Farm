@@ -25,6 +25,37 @@ def add_user(first_name, last_name, phone, email, password):
     db.session.commit()
     return user
 
+def get_all_users():
+    """Hämta alla användare."""
+    return User.query.all()
+
+def update_user(user_id, data):
+    """Uppdatera en användare."""
+    user = User.query.get(user_id)
+    if not user:
+        return None
+    if 'first_name' in data:
+        user.first_name = data['first_name']
+    if 'last_name' in data:
+        user.last_name = data['last_name']
+    if 'phone' in data:
+        user.phone = data['phone']
+    if 'email' in data:
+        user.email = data['email']
+    if 'Admin' in data:
+        user.Admin = data['Admin']
+    db.session.commit()
+    return user
+
+def delete_user(user_id):
+    """Ta bort en användare."""
+    user = User.query.get(user_id)
+    if not user:
+        return False
+    db.session.delete(user)
+    db.session.commit()
+    return True
+
 def get_comments_for_product(product_id):
     return Comment.query.filter_by(product_id=product_id).order_by(Comment.created_at.desc()).all()
 

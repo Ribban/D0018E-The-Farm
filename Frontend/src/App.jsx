@@ -264,7 +264,10 @@ function ProductDetail({ product, onAddToCart, onBack, token }) {
             <p><strong>Packdatum:</strong> {product.packaging_date}</p>
           </div>
 
-          <button className="add-to-cart-btn" onClick={() => onAddToCart(product)}>
+          <button 
+            className="add-to-cart-btn"
+            onClick={() => onAddToCart(product)}
+          >
             Lägg till i kundvagn
           </button>
         </div>
