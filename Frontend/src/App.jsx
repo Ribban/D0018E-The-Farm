@@ -63,8 +63,6 @@ function Background_img({}){
     </section>
   );
 }
-  
-
 
 function ProductList({ onAddToCart, token, onProductClick, productsToRender }) {
   const [search, setSearch] = useState("");
@@ -364,7 +362,6 @@ useEffect(() => {
     ? productsToRender.find(p => p.name === currentProduct.name) 
     : null;
 
-
   useEffect(() => {
     if (!token) { setIsAdmin(false); return; }
     axios.get((`${import.meta.env.VITE_SERVER_URL}/api/profile`), {
@@ -374,10 +371,8 @@ useEffect(() => {
       .catch(() => setIsAdmin(false));
   }, [token]);
 
-  // Load cart - from database if logged in, from localStorage if not
   useEffect(() => {
     if (!token || token === "undefined" || token === null) {
-      // Load from localStorage for anonymous users
       const localCart = localStorage.getItem("guestCart");
       if (localCart) {
         try {
@@ -563,6 +558,10 @@ useEffect(() => {
       .then(res => {
         setCheckoutSuccess(res.data.order_id);
         setCart([]);
+        fetch(`${import.meta.env.VITE_SERVER_URL}/api/products`)
+          .then((res) => res.json())
+          .then((data) => setProducts(data))
+          .catch((err) => console.error(err));
       })
       .catch(err => {
         setCheckoutError(err.response?.data?.msg || "Något gick fel");
