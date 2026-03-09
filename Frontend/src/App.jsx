@@ -10,7 +10,7 @@ import Checkout from "./Pages/checkout";
 import AdminProducts from "./Pages/admin";
 import Comments from "./Pages/Comments";
 import About from "./Pages/about";
-import lägd from "./assets/lägd.jpg";
+import Hus from "./assets/Hus.jpg";
 
 function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileClick, onAdminClick, onAboutClick, token, isAdmin }) {
   return (
@@ -53,7 +53,7 @@ function Header({ onCartClick, onHomeClick, logMeOut, onLoginClick, onProfileCli
 function Background_img({}){
   return (
     <section className="hero-section">
-      <img src={lägd} alt="Lönåsgården bakgrund" className="hero-image" />
+      <img src={Hus} alt="Lönåsgården bakgrund" className="hero-image" />
       <div className="hero-overlay">
         <div className="hero-content">
           <h1>Välkommen till Lönåsgården</h1>
