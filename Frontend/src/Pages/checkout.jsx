@@ -15,10 +15,12 @@ function Checkout({ cartItems, onBack, onOrder, loading, error, success }) {
 
   return (
     <section className="checkout">
-      <h2>Slutför köp</h2>
-      <button className="back-btn" onClick={onBack}>
-        ← Tillbaka till kundvagn
-      </button>
+      <div className="checkout-sub">
+        <h2>Slutför köp</h2>
+        <button className="back-btn" onClick={onBack}>
+          ← Tillbaka till kundvagn
+        </button>
+      </div>
       <form onSubmit={handleSubmit}>
         <label>
           Upphämtningsdatum:
@@ -49,8 +51,8 @@ function Checkout({ cartItems, onBack, onOrder, loading, error, success }) {
           Slutför köp
         </button>
       </form>
-      {error && <p style={{color:'red'}}>{error}</p>}
-      {success && <p style={{color:'green'}}>Ordern är lagd! Order-ID: {success}</p>}
+      {error && <p className="error-msg">{error}</p>}
+      {success && <p className="success-msg">Ordern är lagd! Order-ID: {success}</p>}
     </section>
   );
 }

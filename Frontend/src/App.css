@@ -1537,3 +1537,122 @@ textarea:focus {
 .modal-buttons button:last-child:hover {
   background: #f2efeb;
 }
+
+/* --- Checkout Sektion --- */
+
+.checkout {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eae6df;
+  
+}
+.checkout-sub {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.checkout-sub h2 {
+  margin: 0;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #557a46;
+  
+}
+
+.checkout form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.checkout label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #3e3a35;
+  font-size: 0.95rem;
+}
+
+.checkout input[type="date"],
+.checkout input[type="time"],
+.checkout select {
+  padding: 0.8rem;
+  border: 1px solid #dcd7ce;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #3e3a35;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.checkout input:focus,
+.checkout select:focus {
+  outline: none;
+  border-color: #557a46;
+  box-shadow: 0 0 0 2px rgba(85, 122, 70, 0.1);
+}
+
+.checkout button[type="submit"] {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #557a46;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.checkout button[type="submit"]:hover {
+  background: #3a532f;
+}
+
+.checkout button[type="submit"]:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Felmeddelanden och framgångsmeddelanden */
+.checkout .error-msg {
+  color: #c62828;
+  background: #ffebee;
+  padding: 0.8rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  border: 1px solid #f5c6cb;
+}
+
+.checkout .success-msg {
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 0.8rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  border: 1px solid #c3e6cb;
+}
+
+.checkout .back-btn {
+  margin-top: 0.5vw;
+  background: transparent;
+  color: #557a46;
+  border: 1px solid #557a46;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.checkout .back-btn:hover {
+  background: #f2efeb;
+  color: #3a532f;
+}
